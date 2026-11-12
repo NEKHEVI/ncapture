@@ -19,6 +19,9 @@ const CONSIGNE = `Tu lis une photo de facture ou de reçu québécois. Réponds 
 {"fournisseur": string, "date": "AAAA-MM-JJ" ou "", "numero": string, "no_tps": string, "no_tvq": string,
  "sous_total": number, "tps": number, "tvq": number, "pourboire": number, "total": number,
  "articles": [string], "confiance": number entre 0 et 1}
+Règles de lecture (c'est de la comptabilité : exactitude avant tout) :
+- Le fournisseur est le nom du commerce IMPRIMÉ sur la facture (en-tête, logo, bas de facture). Recopie-le tel quel. Ne le déduis jamais des montants, du type d'achat ou d'une facture « typique ». S'il est illisible, mets "" et une confiance ≤ 0.5.
+- Lis chaque montant sur la photo ; n'en calcule aucun. Les articles sont recopiés tels qu'imprimés.
 Règles : montants en dollars avec 2 décimales (point décimal) ; 0 si absent ; no_tps = numéro TPS/TVH (finit par RT0001) ; no_tvq = numéro TVQ (finit par TQ0001) ; "" si absent. Ne devine pas : baisse la confiance si un montant est illisible.`;
 
 const c = (x) => Math.round((Number(x) || 0) * 100);
@@ -59,10 +62,15 @@ export default async function handler(req, res) {
   if (!m) return res.status(400).json({ error: 'image' });
   if (m[2].length > 4_000_000) return res.status(413).json({ error: 'taille' });
 
-  const demo = !process.env.ANTHROPIC_API_KEY || process.env.CAPTURE_DEMO === '1' || b?.demo === true;
-  if (demo) {
+  // Le bouton « Exemples » (reçus dessinés par l'app) reçoit sa lecture type.
+  if (b?.demo === true) {
     const i = Math.abs(Number(b?.index) || 0) % EXEMPLES.length;
     return res.status(200).json({ mode: 'demo', modele: 'exemple', resultat: EXEMPLES[i] });
+  }
+  // Sans IA, une vraie photo n'est PAS lue : on ne renvoie jamais un faux fournisseur.
+  if (!process.env.ANTHROPIC_API_KEY || process.env.CAPTURE_DEMO === '1') {
+    return res.status(200).json({ mode: 'non-lu', modele: 'aucun', resultat: {
+      fournisseur: '', date: '', numero: '', no_tps: '', no_tvq: '', sous_total: 0, tps: 0, tvq: 0, pourboire: 0, total: 0, articles: [], confiance: 0 } });
   }
 
   try {

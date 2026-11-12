@@ -125,9 +125,11 @@ function toast(t){var e=$("toast");e.textContent=t;e.classList.add("on");clearTi
 
 /* ---- règles de vérification (reprises du pipeline Python) ---- */
 function categorie(r){
-  var txt=((r.fournisseur||"")+" "+(r.articles||[]).join(" ")).toLowerCase(), best=null, bn=0;
-  CATS.forEach(function(c){var k=0;(c.motifs||[]).forEach(function(m){try{if(new RegExp(m,"i").test(txt))k++}catch(e){}});if(k>bn){bn=k;best=c}});
-  return best||{code:"5900",nom:"Autres dépenses",cti_rti:1};
+  // Le nom du fournisseur décide d'abord ; les articles servent seulement d'indice (signalé à l'usager).
+  var four=(r.fournisseur||"").toLowerCase(), art=(r.articles||[]).join(" ").toLowerCase(), best=null, bn=0, parArt=false;
+  CATS.forEach(function(c){var kf=0,ka=0;(c.motifs||[]).forEach(function(m){try{var re=new RegExp(m,"i");if(re.test(four))kf++;else if(re.test(art))ka++}catch(e){}});var k=kf*10+ka;if(k>bn){bn=k;best=c;parArt=kf===0}});
+  if(!best||!four.trim()) return {code:"5900",nom:"À classer",cti_rti:1,doute:true};
+  return {code:best.code,nom:best.nom,cti_rti:best.cti_rti,doute:parArt||/^À classer/.test(best.nom)};
 }
 function verifier(r){
   var a=[], sub=cents(r.sous_total), tps=cents(r.tps), tvq=cents(r.tvq), pb=cents(r.pourboire), tot=cents(r.total);
@@ -144,6 +146,9 @@ function enrichir(it){
   var c=categorie(it.r); it.cat=c.code+" "+c.nom; it.cti=c.cti_rti;
   it.alertes=verifier(it.r);
   if(c.cti_rti<1) it.alertes.push("Repas : 50 % des CTI/RTI");
+  if(c.doute) it.alertes.push("Catégorie à confirmer");
+  if(it.mode==="non-lu") it.alertes.unshift("Photo non lue (mode démo) : saisissez le fournisseur et les montants");
+  else if((Number(it.r.confiance)||0)<0.8) it.alertes.push("Lecture incertaine : comparez avec la photo");
   return it;
 }
 
@@ -161,13 +166,13 @@ function lire(file,idx){
   return Promise.all([reduire(file,1600,.82),reduire(file,360,.7)]).then(function(v){
     it.thumb=v[1]; render();
     var h={"Content-Type":"application/json"}, code=localStorage.getItem(CODEKEY); if(code) h["x-capture-code"]=code;
-    return fetch("/api/lire",{method:"POST",headers:h,body:JSON.stringify({image:v[0],index:idx==null?n:idx})});
+    return fetch("/api/lire",{method:"POST",headers:h,body:JSON.stringify(idx==null?{image:v[0]}:{image:v[0],index:idx,demo:true})});
   }).then(function(r){
     if(r.status===401){localStorage.removeItem(CODEKEY);throw new Error("code")}
     if(!r.ok) throw new Error("lecture");
     return r.json();
   }).then(function(j){
-    it.r=j.resultat||{}; it.mode=j.mode; it.modele=j.modele; it.etat="verifier"; enrichir(it);
+    it.mode=j.mode; it.modele=j.modele; it.r=j.resultat||{}; it.etat="verifier"; enrichir(it);
     save(); render(); toast(it.alertes.length?"Lue : "+it.alertes.length+" point(s) à vérifier":"Lue et vérifiée");
   }).catch(function(e){
     it.etat="erreur"; save(); render();
@@ -197,7 +202,7 @@ function vCapturer(){
   '<div class="row"><button class="btn" id="bFiles">Galerie photo</button><button class="btn" id="bDemo">Exemples</button></div>'+
   (enCours?'<div class="busy" style="margin-top:14px"><div class="spin"></div>'+enCours+' lecture'+(enCours>1?'s':'')+' en cours…</div>':"")+'</div>'+
   (nv?'<div class="card item" id="goV" style="grid-template-columns:1fr auto;align-items:center"><div><div class="n">'+nv+' facture'+(nv>1?'s':'')+' à vérifier</div><div class="tx">Corrigez si besoin, puis approuvez.</div></div><span class="tag orange">Orange</span></div>':"")+
-  '<div class="brief"><h3>Comment ça marche</h3><ol><li>Vous prenez la photo.</li><li>'+(CFG.mode==="ia"?"L'IA lit le fournisseur et les montants ; le code refait les calculs.":"La lecture est simulée (démo) ; le code refait les calculs.")+'</li><li>Vous approuvez, puis RBooks crée la facture fournisseur.</li></ol></div>';
+  '<div class="brief"><h3>Comment ça marche</h3><ol><li>Vous prenez la photo.</li><li>'+(CFG.mode==="ia"?"L'IA lit le fournisseur et les montants ; le code refait les calculs.":"Démo : vos photos ne sont pas lues (vous saisissez les montants) ; le bouton Exemples montre une lecture type.")+'</li><li>Vous approuvez, puis RBooks crée la facture fournisseur.</li></ol></div>';
 }
 function ton(a){return /balance|illisible|impossible/i.test(a)?"rouge":"orange"}
 function carte(i){
@@ -292,7 +297,7 @@ function demo(){
   EX.forEach(function(e,k){recu(e).toBlob(function(b){var f=new File([b],"exemple-"+k+".jpg",{type:"image/jpeg"});setTimeout(function(){lire(f,k)},k*300)},"image/jpeg",.85)});
   view="verifier"; setTimeout(render,50);
 }
-$("cam").onchange=function(){[].slice.call(this.files).forEach(lire);this.value="";view="verifier";render()};
+$("cam").onchange=function(){[].slice.call(this.files).forEach(function(f){lire(f)});this.value="";view="verifier";render()};
 $("files").onchange=$("cam").onchange;
 $("nav").addEventListener("click",function(e){var b=e.target.closest("button");if(!b)return;view=b.dataset.v;render();window.scrollTo(0,0)});
 
