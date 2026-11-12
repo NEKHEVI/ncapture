@@ -123,7 +123,8 @@ class Client:
     def connexion(self):
         email, mdp = _identifiants()
         rep = self._req("POST", "/auth/signin", json={"email": email, "password": mdp})
-        tok, org = rep.get("accessToken"), rep.get("organizationId")
+        tok = rep.get("accessToken") or rep.get("access_token")
+        org = rep.get("organizationId") or rep.get("organization_id")
         if not tok:
             raise RBooksErreur("Connexion RBooks refusée.")
         self.h = {"Authorization": f"Bearer {tok}", "organization-id": str(org)}
@@ -153,8 +154,13 @@ class Client:
         for c in comptes:
             if nom.lower() in str(c.get("name") or "").lower():
                 return c["id"]
+        for pref in ("frais de bureau", "office expenses"):
+            for c in comptes:
+                if str(c.get("name") or "").lower() == pref:
+                    return c["id"]
         for c in comptes:
-            if str(c.get("root_type") or c.get("rootType") or "").lower() == "expense":
+            racine = c.get("account_root_type") or c.get("root_type") or c.get("rootType") or ""
+            if str(racine).lower() == "expense":
                 return c["id"]
         return None
 
