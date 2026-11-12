@@ -1,0 +1,236 @@
+{
+  "_note": "Plan comptable des dépenses. 'motifs' = regex (insensible à la casse) testées sur marchand + articles; la catégorie avec le plus de correspondances gagne. 'deductible' = part déductible de l'impôt (repas = 50 %). 'cti_rti' = part de la TPS/TVQ récupérable (repas = 50 %).",
+  "categories": [
+    {
+      "code": "5100",
+      "nom": "Carburant",
+      "deductible": 1.0,
+      "cti_rti": 1.0,
+      "motifs": [
+        "petro.?canada",
+        "\\besso\\b",
+        "\\bshell\\b",
+        "ultramar",
+        "irving",
+        "couche.?tard",
+        "\\bsonic\\b",
+        "harnois",
+        "costco essence",
+        "carburant",
+        "essence",
+        "\\blitres?\\b",
+        "diesel",
+        "ordinaire"
+      ]
+    },
+    {
+      "code": "5110",
+      "nom": "Entretien véhicule",
+      "deductible": 1.0,
+      "cti_rti": 1.0,
+      "motifs": [
+        "canadian tire",
+        "midas",
+        "speedy",
+        "pneus?",
+        "changement d.huile",
+        "lave.?auto",
+        "\\bgarage\\b"
+      ]
+    },
+    {
+      "code": "5120",
+      "nom": "Stationnement & péages",
+      "deductible": 1.0,
+      "cti_rti": 1.0,
+      "motifs": [
+        "stationnement",
+        "parking",
+        "indigo",
+        "impark",
+        "p[ée]age",
+        "pont 25",
+        "autoroute 30"
+      ]
+    },
+    {
+      "code": "5200",
+      "nom": "Repas & représentation",
+      "deductible": 0.5,
+      "cti_rti": 0.5,
+      "motifs": [
+        "restaurant",
+        "resto",
+        "bistro",
+        "brasserie",
+        "\\bbar\\b",
+        "\\bpub\\b",
+        "caf[ée]",
+        "addition",
+        "table\\s*#?\\d",
+        "pourboire",
+        "pinte",
+        "\\bverre\\b",
+        "burger",
+        "bavette",
+        "tim hortons",
+        "starbucks",
+        "mcdonald",
+        "rialto",
+        "rouge.?gorge"
+      ]
+    },
+    {
+      "code": "5300",
+      "nom": "Déplacements & hébergement",
+      "deductible": 1.0,
+      "cti_rti": 1.0,
+      "motifs": [
+        "h[ôo]tel(?! universel)",
+        "airbnb",
+        "uber",
+        "lyft",
+        "taxi",
+        "via rail",
+        "air canada",
+        "\\bporter\\b",
+        "westjet",
+        "\\bstm\\b",
+        "\\bexo\\b",
+        "orl[ée]ans express",
+        "location auto",
+        "enterprise",
+        "\\bbudget\\b"
+      ]
+    },
+    {
+      "code": "5400",
+      "nom": "Fournitures de bureau",
+      "deductible": 1.0,
+      "cti_rti": 1.0,
+      "motifs": [
+        "bureau en gros",
+        "staples",
+        "papeterie",
+        "postes canada",
+        "purolator",
+        "fedex",
+        "ups store"
+      ]
+    },
+    {
+      "code": "5410",
+      "nom": "Matériel, outillage & équipement",
+      "deductible": 1.0,
+      "cti_rti": 1.0,
+      "motifs": [
+        "\\brona\\b",
+        "home depot",
+        "r[ée]no.?d[ée]p[ôo]t",
+        "\\bbmr\\b",
+        "canac",
+        "patrick morin",
+        "quincaillerie",
+        "climatiseur",
+        "outil"
+      ]
+    },
+    {
+      "code": "5420",
+      "nom": "Informatique & électronique",
+      "deductible": 1.0,
+      "cti_rti": 1.0,
+      "motifs": [
+        "best buy",
+        "\\bapple\\b",
+        "\\bmicro.?boutique",
+        "newegg",
+        "memory express",
+        "ordinateur",
+        "[ée]cran",
+        "clavier"
+      ]
+    },
+    {
+      "code": "5500",
+      "nom": "Logiciels & abonnements",
+      "deductible": 1.0,
+      "cti_rti": 1.0,
+      "motifs": [
+        "adobe",
+        "microsoft",
+        "google",
+        "openai",
+        "anthropic",
+        "github",
+        "vercel",
+        "supabase",
+        "notion",
+        "figma",
+        "abonnement",
+        "subscription"
+      ]
+    },
+    {
+      "code": "5600",
+      "nom": "Télécommunications",
+      "deductible": 1.0,
+      "cti_rti": 1.0,
+      "motifs": [
+        "\\bbell\\b",
+        "vid[ée]otron",
+        "rogers",
+        "telus",
+        "fizz",
+        "koodo",
+        "virgin"
+      ]
+    },
+    {
+      "code": "5700",
+      "nom": "Formation & congrès",
+      "deductible": 1.0,
+      "cti_rti": 1.0,
+      "motifs": [
+        "formation",
+        "\\bcours\\b",
+        "congr[èe]s",
+        "conf[ée]rence",
+        "eventbrite",
+        "udemy"
+      ]
+    },
+    {
+      "code": "5800",
+      "nom": "Santé & avantages employés",
+      "deductible": 1.0,
+      "cti_rti": 0.0,
+      "motifs": [
+        "physio",
+        "kinatex",
+        "clinique",
+        "pharmac",
+        "jean coutu",
+        "pharmaprix",
+        "uniprix",
+        "dentiste",
+        "massoth",
+        "chiro",
+        "ost[ée]o"
+      ],
+      "alerte": "Normalement pas une dépense d'entreprise : vérifier la politique (avantage imposable possible)."
+    },
+    {
+      "code": "5900",
+      "nom": "À classer",
+      "deductible": 0.0,
+      "cti_rti": 0.0,
+      "motifs": []
+    }
+  ],
+  "comptes_bilan": {
+    "tps_a_recevoir": "1210 TPS à recevoir (CTI)",
+    "tvq_a_recevoir": "1220 TVQ à recevoir (RTI)",
+    "a_rembourser": "2150 Comptes de dépenses à rembourser"
+  }
+}

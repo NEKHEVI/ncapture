@@ -1,0 +1,30 @@
+{
+  "moteur": "claude (test — lu par Claude dans la session)",
+  "data": {
+    "est_recu": true,
+    "fragment": "complet",
+    "marchand": "Le Rouge Gorge",
+    "adresse": "1234 av. du Mont-Royal E, Montréal, QC",
+    "telephone": "514-303-3822",
+    "no_tps": null,
+    "no_tvq": null,
+    "date": "2025-09-20",
+    "heure": "00:21",
+    "devise": "CAD",
+    "articles": [],
+    "sous_total": null,
+    "tps": null,
+    "tvq": null,
+    "tvh": null,
+    "montant_avant_pourboire": 125.32,
+    "pourboire": 21.8,
+    "total": 147.12,
+    "mode_paiement": "debit",
+    "carte_4": "9805",
+    "no_autorisation": "034763",
+    "no_facture": "860138",
+    "categorie_suggeree": "repas",
+    "confiance": 0.85,
+    "notes": "Bordereau Interac (copie marchand) ; en-tête pâle. Taxes non détaillées."
+  }
+}

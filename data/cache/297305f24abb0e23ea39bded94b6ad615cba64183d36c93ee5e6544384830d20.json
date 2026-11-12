@@ -1,0 +1,46 @@
+{
+  "moteur": "claude (test — lu par Claude dans la session)",
+  "data": {
+    "est_recu": true,
+    "fragment": "complet",
+    "marchand": "Le Rialto (Hôtel Universel)",
+    "adresse": null,
+    "telephone": null,
+    "no_tps": "103169322RT0001",
+    "no_tvq": "1001426121TQ0001",
+    "date": "2026-06-27",
+    "heure": "18:18",
+    "devise": "CAD",
+    "articles": [
+      {
+        "description": "Verre maison blanc",
+        "quantite": 1,
+        "montant": 6.95
+      },
+      {
+        "description": "Pinte Stella",
+        "quantite": 1,
+        "montant": 11.0
+      },
+      {
+        "description": "Busker",
+        "quantite": 1,
+        "montant": 8.5
+      }
+    ],
+    "sous_total": 26.45,
+    "tps": 1.32,
+    "tvq": 2.64,
+    "tvh": null,
+    "montant_avant_pourboire": null,
+    "pourboire": null,
+    "total": 30.41,
+    "mode_paiement": null,
+    "carte_4": null,
+    "no_autorisation": null,
+    "no_facture": "1533539-1",
+    "categorie_suggeree": "repas",
+    "confiance": 0.9,
+    "notes": "Addition (pas de preuve de paiement ni de pourboire réel). Nos de taxe partiellement lisibles."
+  }
+}

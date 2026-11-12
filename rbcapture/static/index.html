@@ -1,0 +1,185 @@
+<!doctype html>
+<html lang="fr-CA">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>RBooks Capture</title>
+<style>
+:root{--bg:#f4f6f9;--card:#fff;--ink:#1b2430;--mut:#5d6b7c;--line:#dfe5ec;--pri:#1f3a5f;--ok:#1d7a46;--warn:#b4570a;--bad:#b3261e;--warnbg:#fff4e5;--badbg:#fdecea;--okbg:#e7f5ec}
+@media (prefers-color-scheme:dark){:root{--bg:#10151c;--card:#19212b;--ink:#e8edf3;--mut:#9aa8b8;--line:#2a3643;--pri:#7fb0ee;--ok:#5fd08e;--warn:#f0a458;--bad:#ff8a80;--warnbg:#3a2a14;--badbg:#3b1b19;--okbg:#14301f}}
+*{box-sizing:border-box}
+body{margin:0;background:var(--bg);color:var(--ink);font:16px/1.4 system-ui,-apple-system,Segoe UI,Roboto,sans-serif}
+header{background:var(--pri);color:#fff;padding:14px 16px}
+header h1{margin:0;font-size:20px}
+@media (prefers-color-scheme:dark){header{background:#1d2a3a}}
+.badges{display:flex;gap:8px;flex-wrap:wrap;margin-top:8px}
+.badge{font-size:13px;padding:3px 10px;border-radius:99px;background:rgba(255,255,255,.18)}
+main{max-width:900px;margin:0 auto;padding:12px 16px 80px}
+.card{background:var(--card);border:1px solid var(--line);border-radius:12px;padding:14px;margin:12px 0}
+.btn{display:inline-block;border:0;border-radius:10px;padding:12px 16px;font-size:16px;font-weight:600;background:var(--pri);color:#fff;cursor:pointer;text-align:center;text-decoration:none}
+@media (prefers-color-scheme:dark){.btn{color:#0d1520}}
+.btn.sec{background:transparent;color:var(--pri);border:1.5px solid var(--pri)}
+.btn.ok{background:var(--ok);color:#fff}
+.btn.bad{background:transparent;color:var(--bad);border:1.5px solid var(--bad)}
+.btn.big{display:block;width:100%;padding:18px;font-size:18px}
+.row{display:flex;gap:8px;flex-wrap:wrap;margin-top:10px}
+.row>.btn{flex:1 1 140px}
+input[type=file]{display:none}
+.tabs{display:flex;gap:6px;overflow-x:auto;margin:16px 0 4px}
+.tab{padding:8px 14px;border-radius:99px;border:1px solid var(--line);background:var(--card);color:var(--ink);cursor:pointer;white-space:nowrap;font-size:15px}
+.tab.on{background:var(--pri);color:#fff;border-color:var(--pri)}
+@media (prefers-color-scheme:dark){.tab.on{color:#0d1520}}
+.doc{display:grid;grid-template-columns:110px 1fr;gap:12px}
+@media (max-width:480px){.doc{grid-template-columns:84px 1fr}}
+.thumbs img{width:100%;border-radius:8px;border:1px solid var(--line);display:block;margin-bottom:6px;cursor:zoom-in}
+h3{margin:0 0 2px;font-size:17px}
+.sub{color:var(--mut);font-size:14px}
+table.m{border-collapse:collapse;margin:8px 0;font-size:15px;width:100%;max-width:360px}
+table.m td{padding:2px 0}table.m td:last-child{text-align:right;font-variant-numeric:tabular-nums}
+table.m tr.t td{border-top:1px solid var(--line);font-weight:700;padding-top:4px}
+.al{background:var(--warnbg);color:var(--warn);border-radius:8px;padding:6px 10px;margin:4px 0;font-size:14px}
+.al.b{background:var(--badbg);color:var(--bad)}
+.inf{color:var(--mut);font-size:13px;margin:2px 0}
+.tag{display:inline-block;font-size:12px;padding:2px 8px;border-radius:99px;background:var(--okbg);color:var(--ok);font-weight:600}
+.tag.w{background:var(--warnbg);color:var(--warn)}.tag.b{background:var(--badbg);color:var(--bad)}
+form.corr{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-top:10px}
+form.corr label{font-size:13px;color:var(--mut);display:flex;flex-direction:column;gap:2px}
+form.corr label.w{grid-column:1/-1}
+form.corr input,form.corr select{font:inherit;padding:9px;border-radius:8px;border:1px solid var(--line);background:var(--bg);color:var(--ink);width:100%}
+#msg{position:fixed;left:12px;right:12px;bottom:12px;background:var(--ink);color:var(--bg);padding:12px 14px;border-radius:10px;display:none;z-index:9}
+#zoom{position:fixed;inset:0;background:rgba(0,0,0,.85);display:none;z-index:10;overflow:auto}
+#zoom img{width:100%;max-width:900px;display:block;margin:0 auto}
+.drop{border:2px dashed var(--line);border-radius:12px;padding:14px;text-align:center;color:var(--mut)}
+.drop.on{border-color:var(--pri);background:var(--okbg)}
+.vide{color:var(--mut);text-align:center;padding:24px}
+</style>
+</head>
+<body>
+<header>
+  <h1>RBooks Capture</h1>
+  <div class="badges"><span class="badge" id="b-mode">...</span><span class="badge" id="b-rb">...</span></div>
+</header>
+<main>
+  <div class="card">
+    <label class="btn big" for="cam">&#128247; Prendre une photo</label>
+    <input id="cam" type="file" accept="image/*" capture="environment">
+    <div class="row" style="margin-top:12px">
+      <label class="btn sec" for="fic">Choisir des fichiers</label>
+      <input id="fic" type="file" accept="image/*" multiple>
+      <button class="btn sec" id="demo">Charger les factures de test</button>
+    </div>
+    <div class="drop" id="drop" style="margin-top:12px">ou glissez des photos ici</div>
+  </div>
+
+  <div class="tabs" id="tabs"></div>
+  <div class="row" style="margin:0 0 6px">
+    <a class="btn sec" href="/export/transactions.csv">&#11015; CSV</a>
+    <a class="btn sec" href="/export/transactions.xlsx">&#11015; Excel</a>
+    <button class="btn sec" id="envoyer-tout">Envoyer les approuv&eacute;es &agrave; RBooks</button>
+  </div>
+  <div id="liste"></div>
+  <p class="sub" style="text-align:center"><button class="btn bad" id="reset" style="padding:6px 12px;font-size:13px">Remettre la d&eacute;mo &agrave; z&eacute;ro</button></p>
+</main>
+<div id="msg"></div>
+<div id="zoom"><img alt=""></div>
+<script>
+const $=s=>document.querySelector(s);
+const esc=s=>String(s??'').replace(/[&<>"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]));
+const LIB={A_VERIFIER:'À vérifier',APPROUVE:'Approuvées',ENVOYE:'Envoyées à RBooks',AUTRES:'Doublons / non lus'};
+let ST={},DOCS=[],ONGLET='A_VERIFIER',OUVERT=null;
+function msg(t,ms=3500){const m=$('#msg');m.textContent=t;m.style.display='block';clearTimeout(msg.t);msg.t=setTimeout(()=>m.style.display='none',ms)}
+async function api(u,o){const r=await fetch(u,o);if(!r.ok)throw new Error('HTTP '+r.status);return r.json()}
+const post=(u,b)=>api(u,{method:'POST',headers:{'content-type':'application/json'},body:JSON.stringify(b||{})});
+const $$=v=>v===''||v==null?'—':Number(v).toLocaleString('fr-CA',{minimumFractionDigits:2,maximumFractionDigits:2})+' $';
+
+async function charger(){
+  ST=await api('/api/status');DOCS=await api('/api/docs');
+  $('#b-mode').textContent=ST.mode==='reel'?'Lecture IA réelle activée':'Mode démo (cache)';
+  $('#b-rb').textContent=ST.rbooks_pret?'RBooks : serveur prêt':'RBooks : serveur pas prêt (envoi en attente)';
+  rendre();
+}
+function groupe(d){return ['A_VERIFIER','APPROUVE','ENVOYE'].includes(d.statut)?d.statut:'AUTRES'}
+function rendre(){
+  const n={};DOCS.forEach(d=>n[groupe(d)]=(n[groupe(d)]||0)+1);
+  $('#tabs').innerHTML=Object.keys(LIB).map(k=>`<button class="tab ${k===ONGLET?'on':''}" data-k="${k}">${LIB[k]} (${n[k]||0})</button>`).join('');
+  document.querySelectorAll('.tab').forEach(b=>b.onclick=()=>{ONGLET=b.dataset.k;rendre()});
+  const L=DOCS.filter(d=>groupe(d)===ONGLET);
+  $('#liste').innerHTML=L.length?L.map(carte).join(''):'<div class="vide">Rien ici pour le moment.</div>';
+  document.querySelectorAll('[data-act]').forEach(b=>b.onclick=()=>action(b.dataset.act,b.dataset.id));
+  document.querySelectorAll('.thumbs img').forEach(i=>i.onclick=()=>{$('#zoom img').src=i.src;$('#zoom').style.display='block'});
+  document.querySelectorAll('form.corr').forEach(f=>f.onsubmit=e=>{e.preventDefault();sauverCorr(f)});
+}
+function carte(d){
+  const r=d.r,ph=d.photos.map(p=>`<img src="${p}" loading="lazy" alt="Photo de la facture">`).join('');
+  let corps='';
+  if(r){
+    const al=r.alertes.map(a=>`<div class="al ${/incohérent|illisible|non réclamables|Total/.test(a)?'b':''}">&#9888; ${esc(a)}</div>`).join('');
+    const eq=r.equilibre?'<span class="tag">Total équilibré</span>':'<span class="tag b">Total qui ne balance pas</span>';
+    corps=`<h3>${esc(r.marchand||'Marchand inconnu')} ${eq}</h3>
+      <div class="sub">${esc(r.date||'date ?')} · ${esc(r.categorie_code)} ${esc(r.categorie)} · ${esc(d.id)} · ${esc(d.moteur)}</div>
+      <table class="m"><tr><td>Sous-total</td><td>${$$(r.sous_total)}</td></tr><tr><td>TPS ${r.taxes_estimees?'(estimée)':''}</td><td>${$$(r.tps)}</td></tr>
+      <tr><td>TVQ ${r.taxes_estimees?'(estimée)':''}</td><td>${$$(r.tvq)}</td></tr>${r.pourboire?`<tr><td>Pourboire</td><td>${$$(r.pourboire)}</td></tr>`:''}
+      <tr class="t"><td>Total</td><td>${$$(r.total)}</td></tr></table>
+      <div class="sub">No TPS : ${esc(r.no_tps||'—')} · No TVQ : ${esc(r.no_tvq||'—')}</div>
+      ${al||'<div class="inf" style="color:var(--ok)">Aucune alerte.</div>'}
+      ${r.infos.map(i=>`<div class="inf">${esc(i)}</div>`).join('')}`;
+  }else corps=`<h3>${esc(d.fichiers[0])}</h3>`;
+  if(d.message)corps+=`<div class="al b">${esc(d.message)}${d.doublon_de?' ('+esc(d.doublon_de)+')':''}</div>`;
+  if(d.bill_id)corps+=`<div><span class="tag">Facture fournisseur RBooks #${d.bill_id}</span></div>`;
+  if(d.erreur_envoi)corps+=`<div class="al">${esc(d.erreur_envoi)}</div>`;
+  let btn='';
+  if(d.statut==='A_VERIFIER'||d.statut==='NON_LU')btn+=`<button class="btn sec" data-act="corr" data-id="${d.id}">Corriger</button>`;
+  if(d.statut==='A_VERIFIER')btn+=`<button class="btn ok" data-act="approve" data-id="${d.id}">Approuver</button><button class="btn bad" data-act="reject" data-id="${d.id}">Rejeter</button>`;
+  if(d.statut==='APPROUVE')btn+=`<button class="btn" data-act="send" data-id="${d.id}">Envoyer à RBooks</button><button class="btn sec" data-act="corr" data-id="${d.id}">Corriger</button>`;
+  const form=OUVERT===d.id?formCorr(d):'';
+  return `<div class="card"><div class="doc"><div class="thumbs">${ph}</div><div>${corps}<div class="row">${btn}</div>${form}</div></div></div>`;
+}
+function formCorr(d){
+  const r=d.r||{},c=d.corrections||{};
+  const v=(k,fallback)=>esc(c[k]??fallback??'');
+  const f=(k,lib,val,t='text')=>`<label>${lib}<input name="${k}" type="${t}" inputmode="${t==='text'?'text':'decimal'}" value="${val}"></label>`;
+  const opts=ST.categories.map(x=>`<option value="${x.code}" ${x.code===(c.categorie||r.categorie_code)?'selected':''}>${x.code} ${esc(x.nom)}</option>`).join('');
+  return `<form class="corr" data-id="${d.id}"><label class="w">Marchand<input name="marchand" value="${v('marchand',r.marchand)}"></label>
+    ${f('date','Date (AAAA-MM-JJ)',v('date',r.date))}${f('no_facture','No de facture',v('no_facture',r.no_facture))}
+    ${f('no_tps','No TPS',v('no_tps',r.no_tps))}${f('no_tvq','No TVQ',v('no_tvq',r.no_tvq))}
+    ${f('sous_total','Sous-total',v('sous_total',r.sous_total))}${f('tps','TPS',v('tps',r.tps))}
+    ${f('tvq','TVQ',v('tvq',r.tvq))}${f('pourboire','Pourboire',v('pourboire',r.pourboire))}
+    ${f('total','Total',v('total',r.total))}<label>Catégorie<select name="categorie">${opts}</select></label>
+    <button class="btn w" style="grid-column:1/-1">Enregistrer la correction</button></form>`;
+}
+async function sauverCorr(f){
+  const o={};new FormData(f).forEach((v,k)=>o[k]=v);
+  await post(`/api/docs/${f.dataset.id}/correct`,o);OUVERT=null;msg('Correction enregistrée');charger();
+}
+async function action(a,id){
+  try{
+    if(a==='corr'){OUVERT=OUVERT===id?null:id;return rendre()}
+    if(a==='approve'){const r=await post(`/api/docs/${id}/approve`);msg(r.envoi?'Approuvée. '+r.envoi:'Approuvée et envoyée à RBooks',6000)}
+    if(a==='reject'){await post(`/api/docs/${id}/reject`);msg('Rejetée')}
+    if(a==='send'){const r=await post(`/api/docs/${id}/send`);msg(r.ok?'Envoyée à RBooks':r.erreur,6000)}
+  }catch(e){msg('Erreur : '+e.message)}
+  charger();
+}
+async function televerser(files){
+  if(!files.length)return;
+  const fd=new FormData();[...files].forEach(f=>fd.append('files',f));
+  msg('Lecture en cours...',60000);
+  try{const r=await api('/api/upload',{method:'POST',body:fd});
+    const n=r.filter(x=>x.action==='a_verifier'||x.action==='fusionne').length;
+    msg(`${r.length} photo(s) reçue(s) : ${n} à vérifier`,5000);ONGLET='A_VERIFIER'}catch(e){msg('Erreur : '+e.message)}
+  charger();
+}
+$('#cam').onchange=e=>{televerser(e.target.files);e.target.value=''};
+$('#fic').onchange=e=>{televerser(e.target.files);e.target.value=''};
+$('#demo').onclick=async()=>{msg('Chargement des factures de test...',30000);await post('/api/demo-load');msg('Factures de test chargées');ONGLET='A_VERIFIER';charger()};
+$('#envoyer-tout').onclick=async()=>{const r=await post('/api/send-approved');msg(`${r.envoyes} / ${r.total} envoyée(s) à RBooks`);charger()};
+$('#reset').onclick=async()=>{if(confirm('Effacer la liste de la démo ? (les photos restent dans inbox)')){await post('/api/reset');charger()}};
+$('#zoom').onclick=()=>$('#zoom').style.display='none';
+const dz=$('#drop');
+['dragenter','dragover'].forEach(t=>dz.addEventListener(t,e=>{e.preventDefault();dz.classList.add('on')}));
+['dragleave','drop'].forEach(t=>dz.addEventListener(t,e=>{e.preventDefault();dz.classList.remove('on')}));
+dz.addEventListener('drop',e=>televerser(e.dataTransfer.files));
+charger();setInterval(()=>{if(!OUVERT)api('/api/status').then(s=>{if(s.rbooks_pret!==ST.rbooks_pret)charger()}).catch(()=>{})},5000);
+</script>
+</body>
+</html>

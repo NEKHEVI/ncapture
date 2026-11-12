@@ -1,0 +1,41 @@
+{
+  "moteur": "claude (test — lu par Claude dans la session)",
+  "data": {
+    "est_recu": true,
+    "fragment": "haut",
+    "marchand": "RONA+ Anjou (Renaude-Lapointe)",
+    "adresse": "10200 Renaude-Lapointe, Anjou, QC H1J 2V7",
+    "telephone": "514-354-5655",
+    "no_tps": "103039624RT0001",
+    "no_tvq": "1001939455TQ0001",
+    "date": null,
+    "heure": null,
+    "devise": "CAD",
+    "articles": [
+      {
+        "description": "Climatiseur portatif 8500 BTU/250 pc",
+        "quantite": 1,
+        "montant": 279.99
+      },
+      {
+        "description": "Pepperoni original 22 g",
+        "quantite": 3,
+        "montant": 5.97
+      }
+    ],
+    "sous_total": 285.96,
+    "tps": 14.0,
+    "tvq": 27.93,
+    "tvh": null,
+    "montant_avant_pourboire": null,
+    "pourboire": null,
+    "total": 327.89,
+    "mode_paiement": "debit",
+    "carte_4": "9805",
+    "no_autorisation": "189658",
+    "no_facture": null,
+    "categorie_suggeree": "matériel",
+    "confiance": 0.85,
+    "notes": "Reçu froissé ; libellés TPS/TVQ partiellement effacés mais montants lisibles. Date absente de cette partie."
+  }
+}
