@@ -4,7 +4,7 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
 <title>RBooks Capture</title>
-<meta name="theme-color" content="#0E0E0F">
+<meta name="theme-color" content="#F6F4EF" media="(prefers-color-scheme: light)"><meta name="theme-color" content="#0E0E0F" media="(prefers-color-scheme: dark)">
 <meta name="robots" content="noindex">
 <link rel="manifest" href="/manifest.webmanifest">
 <link rel="icon" href="/favicon.png">
@@ -13,69 +13,83 @@
 <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Sora:wght@600;700&family=Manrope:wght@400;500;600;700&family=JetBrains+Mono:wght@500&display=swap">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Sora:wght@500;600&family=Manrope:wght@400;500;600;700&family=JetBrains+Mono:wght@500&display=swap">
 <style>
-:root{--bg:#0E0E0F;--surf:#17171A;--surf2:#1F1F23;--line:#2A2A2F;--fg:#EDE9E1;--muted:#A8A193;--gold:#F8B925;--gold-soft:rgba(248,185,37,.12);--red:#F0766A;--red-soft:rgba(240,118,106,.12);--green:#5FC98B;--green-soft:rgba(95,201,139,.12)}
+/* Charte RAWLF « Gold Systems » (docs/DESIGN_DIRECTION.md) — clair et sombre selon le système. */
+:root{--bg:#F6F4EF;--card:#FFFFFF;--raised:#FBFAF7;--border:#E6E1D7;--input:#DDD8CD;--divider:#EEEAE2;
+--fg:#1A1814;--fg2:#4A463F;--muted:#6B665C;--faint:#77726A;--gold:#D9A441;--on-gold:#120E06;--gold-text:#8A6414;--gold-strong:#6E4F0E;
+--brief:#FFF8EA;--brief-b:#E9D3A3;--nav:#F5EBD3;--nav-fg:#6E4F0E;--ok:#1F7A47;--ok-bg:#EAF6EF;--ok-b:#BFE0CC;
+--red:#A3321F;--red-bg:#FCEDEA;--red-b:#EDC2B8;--ora:#9A5B0B;--ora-bg:#FDF3E4;--ora-b:#F0D2A6;--draft:#6E4F0E;--draft-bg:#FBF1DA;--draft-b:#E2C98B;--ring:#D9A441}
+@media (prefers-color-scheme:dark){:root{--bg:#0E0E0F;--card:#131211;--raised:#151413;--border:#22201C;--input:#262320;--divider:#1C1A17;
+--fg:#EDE9E1;--fg2:#C9C3B7;--muted:#A8A193;--faint:#8F897D;--gold-text:#E2B654;--gold-strong:#F3CF7A;--brief:#14120E;--brief-b:#3A3022;--nav:#1A1813;--nav-fg:#F3CF7A;
+--ok:#7FD3A0;--ok-bg:#0F1A13;--ok-b:#24412F;--red:#FF9C8A;--red-bg:#1F1210;--red-b:#5C2A22;--ora:#F2B56B;--ora-bg:#1E160C;--ora-b:#5A3F1C;--draft:#F3CF7A;--draft-bg:#1E190F;--draft-b:#5A4620}}
 *{box-sizing:border-box;-webkit-tap-highlight-color:transparent}
-html,body{margin:0;background:var(--bg);color:var(--fg);font:15px/1.5 Manrope,system-ui,sans-serif}
-header{position:sticky;top:0;z-index:5;background:rgba(14,14,15,.92);backdrop-filter:blur(10px);border-bottom:1px solid var(--line);padding:calc(10px + env(safe-area-inset-top)) 16px 10px;display:flex;align-items:center;gap:10px}
-header img{width:30px;height:30px}
-header .t{font:700 17px Sora,sans-serif;letter-spacing:.02em}
-header .t span{color:var(--gold)}
-.pill{margin-left:auto;font:500 10.5px "JetBrains Mono",monospace;letter-spacing:.08em;text-transform:uppercase;padding:4px 9px;border-radius:999px;border:1px solid var(--line);color:var(--muted)}
-.pill.ia{color:var(--green);border-color:rgba(95,201,139,.4)}
-.pill.demo{color:var(--gold);border-color:rgba(248,185,37,.4)}
-main{padding:16px 16px calc(96px + env(safe-area-inset-bottom));max-width:560px;margin:0 auto}
-h1{font:700 24px/1.2 Sora,sans-serif;margin:6px 0 4px}
-.sub{color:var(--muted);margin:0 0 18px}
-.cam{display:flex;flex-direction:column;align-items:center;justify-content:center;gap:10px;width:100%;aspect-ratio:1/1;max-height:340px;border-radius:24px;border:2px dashed rgba(248,185,37,.45);background:radial-gradient(circle at 50% 40%,rgba(248,185,37,.10),transparent 60%),var(--surf);color:var(--fg);font:700 19px Sora,sans-serif;cursor:pointer}
-.cam svg{width:64px;height:64px;color:var(--gold)}
-.cam small{font:500 13px Manrope;color:var(--muted)}
-.row{display:flex;gap:10px;margin-top:12px}
-.btn{flex:1;display:inline-flex;align-items:center;justify-content:center;gap:8px;min-height:48px;padding:0 16px;border-radius:14px;border:1px solid var(--line);background:var(--surf2);color:var(--fg);font:600 15px Manrope;cursor:pointer;text-decoration:none}
-.btn.gold{background:var(--gold);border-color:var(--gold);color:#0E0E0F}
-.btn.ghost{background:transparent}
-.btn.small{min-height:38px;font-size:13.5px;flex:0 0 auto}
+html,body{margin:0;background:var(--bg);color:var(--fg);font:15px/1.55 Manrope,system-ui,sans-serif;-webkit-font-smoothing:antialiased}
+.top{position:sticky;top:0;z-index:5;background:var(--card);border-bottom:1px solid var(--border);padding:calc(10px + env(safe-area-inset-top)) 16px 10px;display:flex;align-items:center;gap:10px}
+.mark{width:30px;height:30px;border-radius:8px;background:#0E0E0F;display:grid;place-items:center;flex:none}
+.mark img{width:22px;height:22px}
+.word{font:600 14px Sora,sans-serif;letter-spacing:.3em}
+.mod{font:500 13px Manrope;color:var(--muted);padding-left:10px;border-left:1px solid var(--border)}
+.tag{display:inline-flex;align-items:center;gap:5px;font:600 12px Manrope;line-height:1.2;padding:3px 8px;border-radius:6px;border:1px solid var(--border);background:var(--raised);color:var(--fg2)}
+.tag.rouge{color:var(--red);background:var(--red-bg);border-color:var(--red-b)}
+.tag.orange{color:var(--ora);background:var(--ora-bg);border-color:var(--ora-b)}
+.tag.vert{color:var(--ok);background:var(--ok-bg);border-color:var(--ok-b)}
+.tag.draft{color:var(--draft);background:var(--draft-bg);border-color:var(--draft-b)}
+.top .tag{margin-left:auto;font-family:"JetBrains Mono",monospace;font-weight:500;font-size:11px}
+main{padding:18px 16px calc(92px + env(safe-area-inset-bottom));max-width:560px;margin:0 auto}
+.org{display:flex;align-items:center;justify-content:space-between;width:100%;min-height:44px;padding:0 14px;border:1px solid var(--border);border-radius:10px;background:var(--card);font:600 14px Manrope;color:var(--fg);margin-bottom:18px}
+.org span{overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+h1{font:600 26px/1.15 Sora,sans-serif;letter-spacing:-.02em;margin:0 0 6px}
+h2{font:600 18px/1.25 Sora,sans-serif;letter-spacing:-.01em;margin:0 0 6px}
+.sub{color:var(--muted);margin:0 0 18px;font-size:14.5px}
+.card{background:var(--card);border:1px solid var(--border);border-radius:14px;padding:16px;margin:0 0 12px}
+.brief{background:var(--brief);border:1px solid var(--brief-b);border-radius:14px;padding:14px 16px;margin:0 0 12px}
+.brief h3{font:600 14px Sora,sans-serif;margin:0 0 8px;color:var(--gold-strong)}
+.brief ol{margin:0;padding-left:20px;color:var(--fg2);font-size:14px}
+.brief li{margin:3px 0}
+.row{display:flex;gap:10px;margin-top:10px}
+.btn{flex:1;display:inline-flex;align-items:center;justify-content:center;gap:8px;min-height:46px;padding:0 14px;border-radius:10px;border:1px solid var(--input);background:var(--card);color:var(--fg);font:600 14.5px Manrope;cursor:pointer;text-decoration:none}
+.btn svg{width:18px;height:18px}
+.btn.gold{background:var(--gold);border-color:var(--gold);color:var(--on-gold)}
+.btn.full{width:100%}
 .btn:disabled{opacity:.45}
-.card{background:var(--surf);border:1px solid var(--line);border-radius:18px;padding:14px;margin:0 0 12px}
-.item{display:grid;grid-template-columns:64px 1fr;gap:12px;align-items:start}
-.item img{width:64px;height:84px;object-fit:cover;border-radius:10px;background:var(--surf2)}
-.item .n{font:600 15.5px Sora,sans-serif}
-.item .m{color:var(--muted);font-size:13px}
-.item .tot{font:700 17px Sora,sans-serif;color:var(--gold)}
-.tags{display:flex;flex-wrap:wrap;gap:6px;margin-top:8px}
-.tag{font:600 11.5px Manrope;padding:3px 8px;border-radius:999px;background:var(--surf2);color:var(--muted)}
-.tag.warn{background:var(--red-soft);color:var(--red)}
-.tag.ok{background:var(--green-soft);color:var(--green)}
-.tag.g{background:var(--gold-soft);color:var(--gold)}
-.empty{text-align:center;color:var(--muted);padding:40px 10px}
-.kpis{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:14px}
-.kpi{background:var(--surf);border:1px solid var(--line);border-radius:16px;padding:12px}
+.btn:focus-visible,input:focus-visible,nav button:focus-visible{outline:2px solid var(--ring);outline-offset:2px}
+.item{display:grid;grid-template-columns:58px 1fr auto;gap:12px;align-items:start;cursor:pointer}
+.item img{width:58px;height:76px;object-fit:cover;border-radius:8px;border:1px solid var(--border);background:var(--raised)}
+.item .n{font:500 15.5px Sora,sans-serif;letter-spacing:-.01em}
+.item .m{color:var(--muted);font:500 12px "JetBrains Mono",monospace;margin-top:2px}
+.item .tx{color:var(--fg2);font-size:13px;margin-top:4px}
+.item .tot{font:600 16px Sora,sans-serif;white-space:nowrap;text-align:right}
+.tags{display:flex;flex-wrap:wrap;gap:6px;margin-top:10px;grid-column:1/-1}
+.empty{text-align:center;color:var(--muted);padding:36px 10px;border:1px dashed var(--border);border-radius:14px}
+.kpis{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:12px}
+.kpi{background:var(--card);border:1px solid var(--border);border-radius:14px;padding:12px 14px}
 .kpi small{display:block;font:500 10.5px "JetBrains Mono",monospace;letter-spacing:.08em;text-transform:uppercase;color:var(--muted)}
-.kpi b{font:700 20px Sora,sans-serif}
-nav{position:fixed;left:0;right:0;bottom:0;z-index:5;background:rgba(14,14,15,.95);backdrop-filter:blur(10px);border-top:1px solid var(--line);display:grid;grid-template-columns:repeat(4,1fr);padding:6px 6px calc(6px + env(safe-area-inset-bottom))}
-nav button{background:none;border:0;color:var(--muted);font:600 11.5px Manrope;display:flex;flex-direction:column;align-items:center;gap:3px;padding:6px 0;cursor:pointer;position:relative}
-nav button svg{width:22px;height:22px}
-nav button.on{color:var(--gold)}
-nav .badge{position:absolute;top:2px;left:calc(50% + 6px);background:var(--red);color:#fff;font:700 10px Manrope;border-radius:999px;padding:1px 5px}
-.sheet{position:fixed;inset:0;z-index:10;background:rgba(0,0,0,.6);display:none;align-items:flex-end}
+.kpi b{display:block;font:600 21px Sora,sans-serif;letter-spacing:-.01em;margin-top:2px}
+nav{position:fixed;left:0;right:0;bottom:0;z-index:5;background:var(--card);border-top:1px solid var(--border);display:grid;grid-template-columns:repeat(4,1fr);gap:4px;padding:6px 8px calc(6px + env(safe-area-inset-bottom))}
+nav button{background:none;border:0;border-radius:10px;color:var(--muted);font:600 11.5px Manrope;display:flex;flex-direction:column;align-items:center;gap:2px;padding:7px 0;cursor:pointer;position:relative}
+nav button svg{width:20px;height:20px}
+nav button.on{background:var(--nav);color:var(--nav-fg)}
+nav .badge{position:absolute;top:3px;left:calc(50% + 7px);background:var(--red);color:#fff;font:700 10px Manrope;border-radius:6px;padding:0 5px;line-height:16px}
+.sheet{position:fixed;inset:0;z-index:10;background:rgba(14,14,15,.45);display:none;align-items:flex-end}
 .sheet.on{display:flex}
-.sheet .in{background:var(--bg);border-top:1px solid var(--line);border-radius:22px 22px 0 0;width:100%;max-height:92vh;overflow:auto;padding:16px 16px calc(20px + env(safe-area-inset-bottom))}
-.sheet img.big{width:100%;max-height:300px;object-fit:contain;border-radius:14px;background:var(--surf);margin-bottom:12px}
+.sheet .in{background:var(--bg);border-top:1px solid var(--border);border-radius:16px 16px 0 0;width:100%;max-height:92vh;overflow:auto;padding:16px 16px calc(20px + env(safe-area-inset-bottom))}
+.grab{width:40px;height:4px;border-radius:4px;background:var(--input);margin:0 auto 14px}
+.sheet img.big{width:100%;max-height:280px;object-fit:contain;border-radius:12px;border:1px solid var(--border);background:var(--card);margin-bottom:12px}
 label{display:block;font:600 12.5px Manrope;color:var(--muted);margin:10px 0 4px}
-input{width:100%;min-height:44px;padding:8px 12px;border-radius:12px;border:1px solid var(--line);background:var(--surf);color:var(--fg);font:500 16px Manrope}
-input:focus{outline:2px solid var(--gold);outline-offset:1px}
+input{width:100%;min-height:44px;padding:8px 12px;border-radius:10px;border:1px solid var(--input);background:var(--card);color:var(--fg);font:500 16px Manrope}
 .g2{display:grid;grid-template-columns:1fr 1fr;gap:0 10px}
-.busy{display:flex;align-items:center;gap:10px;color:var(--muted)}
-.spin{width:18px;height:18px;border:2px solid var(--line);border-top-color:var(--gold);border-radius:50%;animation:s 1s linear infinite}
+.busy{display:flex;align-items:center;gap:10px;color:var(--muted);font-size:14px}
+.spin{width:16px;height:16px;border:2px solid var(--border);border-top-color:var(--gold);border-radius:50%;animation:s 1s linear infinite}
 @keyframes s{to{transform:rotate(360deg)}}
-.toast{position:fixed;left:16px;right:16px;bottom:calc(84px + env(safe-area-inset-bottom));z-index:20;background:var(--surf2);border:1px solid var(--line);border-radius:14px;padding:12px 14px;font-weight:600;display:none}
+@media (prefers-reduced-motion:reduce){.spin{animation:none}}
+.toast{position:fixed;left:16px;right:16px;bottom:calc(80px + env(safe-area-inset-bottom));z-index:20;background:var(--fg);color:var(--bg);border-radius:10px;padding:11px 14px;font:600 14px Manrope;display:none}
 .toast.on{display:block}
-.note{font-size:12.5px;color:var(--muted);margin-top:16px}
+.note{font-size:12.5px;color:var(--muted);margin-top:14px}
 </style>
 </head>
 <body>
-<header><img src="/logo.png" alt=""><div class="t">RBooks <span>Capture</span></div><div class="pill" id="mode">…</div></header>
+<header class="top"><div class="mark"><img src="/logo.png" alt=""></div><div class="word">RAWLF</div><div class="mod">RBooks</div><span class="tag draft" id="mode">…</span></header>
 <main id="view"></main>
 <nav id="nav">
   <button data-v="capturer" class="on"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M4 8h3l2-3h6l2 3h3v11H4z"/><circle cx="12" cy="13" r="3.5"/></svg>Capturer</button>
@@ -168,28 +182,34 @@ function render(){
   bind();
 }
 function vCapturer(){
-  var enCours=items.filter(function(i){return i.etat==="lecture"});
-  return '<h1>Nouvelle facture</h1><p class="sub">Photographiez une facture ou un reçu : RBooks lit le fournisseur, les montants, la TPS et la TVQ, puis vérifie les calculs.</p>'+
-  '<button class="cam" id="bCam"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6"><path d="M4 8h3l2-3h6l2 3h3v11H4z"/><circle cx="12" cy="13" r="3.5"/></svg>Prendre une photo<small>Caméra arrière · une facture par photo</small></button>'+
-  '<div class="row"><button class="btn" id="bFiles">Choisir des photos</button><button class="btn ghost" id="bDemo">Factures d\'exemple</button></div>'+
-  (enCours.length?'<div class="card" style="margin-top:14px">'+enCours.map(function(i){return '<div class="busy"><div class="spin"></div>Lecture en cours…</div>'}).join("")+'</div>':"")+
-  '<p class="note">'+(CFG.mode==="ia"?"Lecture par l'IA (Claude). Les calculs sont refaits par le code, jamais par l'IA.":"Mode démo : les lectures sont des exemples. Aucune photo n'est envoyée à une IA.")+'</p>';
+  var enCours=items.filter(function(i){return i.etat==="lecture"}).length, nv=items.filter(function(i){return i.etat==="verifier"}).length;
+  var cam='<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M4 8h3l2-3h6l2 3h3v11H4z"/><circle cx="12" cy="13" r="3.5"/></svg>';
+  return '<button class="org" type="button"><span>Entreprise Démo RBooks inc.</span><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M8 9l4-4 4 4M8 15l4 4 4-4"/></svg></button>'+
+  '<h1>Capture de factures</h1><p class="sub">Photographiez vos factures et vos reçus : RBooks les lit, vérifie la TPS et la TVQ, et les prépare pour la comptabilité.</p>'+
+  '<div class="card"><h2>Nouvelle facture</h2><p class="sub" style="margin-bottom:14px">Une facture par photo, bien à plat et lisible.</p>'+
+  '<button class="btn gold full" id="bCam">'+cam+'Prendre une photo</button>'+
+  '<div class="row"><button class="btn" id="bFiles">Galerie photo</button><button class="btn" id="bDemo">Exemples</button></div>'+
+  (enCours?'<div class="busy" style="margin-top:14px"><div class="spin"></div>'+enCours+' lecture'+(enCours>1?'s':'')+' en cours…</div>':"")+'</div>'+
+  (nv?'<div class="card item" id="goV" style="grid-template-columns:1fr auto;align-items:center"><div><div class="n">'+nv+' facture'+(nv>1?'s':'')+' à vérifier</div><div class="tx">Corrigez si besoin, puis approuvez.</div></div><span class="tag orange">Orange</span></div>':"")+
+  '<div class="brief"><h3>Comment ça marche</h3><ol><li>Vous prenez la photo.</li><li>'+(CFG.mode==="ia"?"L'IA lit le fournisseur et les montants ; le code refait les calculs.":"La lecture est simulée (démo) ; le code refait les calculs.")+'</li><li>Vous approuvez, puis RBooks crée la facture fournisseur.</li></ol></div>';
 }
+function ton(a){return /balance|illisible|impossible/i.test(a)?"rouge":"orange"}
 function carte(i){
-  var r=i.r||{}, tags=(i.alertes||[]).map(function(a){return '<span class="tag warn">'+esc(a)+'</span>'}).join("");
-  if(i.etat==="verifier"&&!(i.alertes||[]).length) tags='<span class="tag ok">Montants vérifiés</span>';
-  if(i.envoye) tags+='<span class="tag g">'+esc(i.envoye)+'</span>';
+  var r=i.r||{}, al=i.alertes||[], tags="";
+  if(i.etat==="verifier"||i.etat==="erreur") tags+=al.length?al.map(function(a){return '<span class="tag '+ton(a)+'">'+esc(a)+'</span>'}).join(""):'<span class="tag vert">Vérifiée</span>';
+  if(i.etat==="approuvee") tags+=i.envoye?'<span class="tag draft">'+esc(i.envoye)+'</span>':'<span class="tag vert">Approuvée</span>';
   if(i.cat) tags+='<span class="tag">'+esc(i.cat)+'</span>';
   return '<div class="card item" data-id="'+i.id+'">'+(i.thumb?'<img src="'+i.thumb+'" alt="">':'<img alt="">')+
   '<div><div class="n">'+esc(r.fournisseur||(i.etat==="erreur"?"Lecture impossible":"Lecture…"))+'</div>'+
-  '<div class="m">'+esc(r.date||"")+(r.numero?" · no "+esc(r.numero):"")+'</div>'+
+  '<div class="m">'+esc(r.date||"")+(r.numero?" · "+esc(r.numero):"")+'</div>'+
+  (r.total!=null?'<div class="tx">TPS '+money(r.tps)+' · TVQ '+money(r.tvq)+'</div>':"")+'</div>'+
   '<div class="tot">'+(r.total!=null?money(r.total):"")+'</div>'+
-  (r.total!=null?'<div class="m">TPS '+money(r.tps)+' · TVQ '+money(r.tvq)+'</div>':"")+'<div class="tags">'+tags+'</div></div></div>';
+  '<div class="tags">'+tags+'</div></div>';
 }
 function vListe(etat,titre,sous){
   var l=items.filter(function(i){return i.etat===etat||(etat==="verifier"&&i.etat==="erreur")});
   var head='<h1>'+titre+'</h1><p class="sub">'+sous+'</p>';
-  if(etat==="approuvee"&&l.length){var ne=l.filter(function(i){return !i.envoye}).length;head+=ne?'<button class="btn gold" id="bSendAll" style="width:100%;margin-bottom:14px">Envoyer '+ne+' facture'+(ne>1?'s':'')+' à RBooks</button>':'<div class="tag ok" style="display:block;text-align:center;padding:10px;margin-bottom:14px">Tout est envoyé à RBooks</div>';}
+  if(etat==="approuvee"&&l.length){var ne=l.filter(function(i){return !i.envoye}).length;head+=ne?'<button class="btn gold full" id="bSendAll" style="margin-bottom:14px">Envoyer '+ne+' facture'+(ne>1?'s':'')+' à RBooks</button>':'<div class="brief" style="text-align:center;font-weight:600">Tout est envoyé à RBooks.</div>';}
   return head+(l.length?l.map(carte).join(""):'<div class="empty">Rien ici pour l\'instant.</div>');
 }
 function totaux(l){var t={n:l.length,sub:0,tps:0,tvq:0,pb:0,tot:0};l.forEach(function(i){var r=i.r;t.sub+=cents(r.sous_total);t.tps+=cents(r.tps);t.tvq+=cents(r.tvq);t.pb+=cents(r.pourboire);t.tot+=cents(r.total)});return t}
@@ -198,18 +218,18 @@ function vExporter(){
   return '<h1>Exporter</h1><p class="sub">Les factures approuvées, prêtes pour la comptabilité.</p>'+
   '<div class="kpis"><div class="kpi"><small>Factures</small><b>'+t.n+'</b></div><div class="kpi"><small>Total</small><b>'+money(t.tot/100)+'</b></div><div class="kpi"><small>TPS</small><b>'+money(t.tps/100)+'</b></div><div class="kpi"><small>TVQ</small><b>'+money(t.tvq/100)+'</b></div></div>'+
   '<div class="row"><button class="btn gold" id="bXlsx"'+(t.n?"":" disabled")+'>Excel (.xlsx)</button><button class="btn" id="bCsv"'+(t.n?"":" disabled")+'>CSV</button></div>'+
-  '<div class="row"><button class="btn ghost" id="bVider">Vider la liste</button></div>'+
+  '<div class="row"><button class="btn" id="bVider">Vider la liste</button></div>'+
   '<p class="note">L\'Excel contient une feuille par mois et une feuille TPS/TVQ (CTI et RTI réclamables).</p>';
 }
 
 function ouvrir(id){
   var i=items.find(function(x){return x.id===id}); if(!i||i.etat==="lecture") return;
   var r=i.r||{}, f=function(k,l,t){return '<div><label for="f_'+k+'">'+l+'</label><input id="f_'+k+'" inputmode="'+(t||"decimal")+'" value="'+esc(r[k]==null?"":r[k])+'"></div>'};
-  $("sheetIn").innerHTML=(i.thumb?'<img class="big" src="'+i.thumb+'" alt="">':"")+
-  '<div class="tags" style="margin:0 0 6px">'+(i.alertes||[]).map(function(a){return '<span class="tag warn">'+esc(a)+'</span>'}).join("")+(i.modele?'<span class="tag">Lu par : '+esc(i.modele)+'</span>':"")+'</div>'+
+  $("sheetIn").innerHTML='<div class="grab"></div>'+(i.thumb?'<img class="big" src="'+i.thumb+'" alt="">':"")+
+  '<div class="tags" style="margin:0 0 6px">'+(i.alertes||[]).map(function(a){return '<span class="tag '+ton(a)+'">'+esc(a)+'</span>'}).join("")+(i.modele?'<span class="tag">Lu par : '+esc(i.modele)+'</span>':"")+'</div>'+
   f("fournisseur","Fournisseur","text")+'<div class="g2">'+f("date","Date (AAAA-MM-JJ)","text")+f("numero","No de facture","text")+f("no_tps","No TPS","text")+f("no_tvq","No TVQ","text")+
   f("sous_total","Sous-total")+f("tps","TPS")+f("tvq","TVQ")+f("pourboire","Pourboire")+'</div>'+f("total","Total")+
-  '<div class="row"><button class="btn ghost" id="bRej">Rejeter</button><button class="btn" id="bSave">Enregistrer</button>'+(i.etat!=="approuvee"?'<button class="btn gold" id="bOk">Approuver</button>':"")+'</div>';
+  '<div class="row"><button class="btn" id="bRej">Rejeter</button><button class="btn" id="bSave">Enregistrer</button>'+(i.etat!=="approuvee"?'<button class="btn gold" id="bOk">Approuver</button>':"")+'</div>';
   $("sheet").classList.add("on");
   var lireForm=function(){["fournisseur","date","numero","no_tps","no_tvq"].forEach(function(k){r[k]=$("f_"+k).value.trim()});["sous_total","tps","tvq","pourboire","total"].forEach(function(k){r[k]=Number(String($("f_"+k).value).replace(",","."))||0});i.r=r;enrichir(i)};
   $("bSave").onclick=function(){lireForm();save();fermer();render();toast(i.alertes.length?i.alertes.length+" point(s) restant(s)":"Montants vérifiés")};
@@ -246,7 +266,7 @@ function xlsx(){var L=lignes();if(!L.length||!window.XLSX)return toast("Excel in
 function bind(){
   var g=function(id,f){var e=$(id);if(e)e.onclick=f};
   g("bCam",function(){$("cam").click()}); g("bFiles",function(){$("files").click()});
-  g("bDemo",function(){demo()}); g("bSendAll",envoyer); g("bCsv",csv); g("bXlsx",xlsx);
+  g("bDemo",function(){demo()}); g("goV",function(){view="verifier";render()}); g("bSendAll",envoyer); g("bCsv",csv); g("bXlsx",xlsx);
   g("bVider",function(){if(confirmer())return;items=[];save();render()});
   document.querySelectorAll(".item[data-id]").forEach(function(e){e.onclick=function(){ouvrir(e.dataset.id)}});
 }
@@ -277,7 +297,7 @@ function demanderCode(){
 items.forEach(function(i){if(i.etat==="lecture")i.etat="erreur"});
 fetch("/categories.json").then(function(r){return r.json()}).then(function(c){CATS=c}).catch(function(){});
 fetch("/api/config").then(function(r){return r.json()}).then(function(c){CFG=c}).catch(function(){}).then(function(){
-  var p=$("mode");p.textContent=CFG.mode==="ia"?"Lecture IA":"Mode démo";p.className="pill "+CFG.mode;
+  var p=$("mode");p.textContent=CFG.mode==="ia"?"Lecture IA":"Démo";p.className="tag "+(CFG.mode==="ia"?"vert":"draft");
   if(CFG.code&&!localStorage.getItem(CODEKEY))demanderCode(); render();
 });
 if("serviceWorker" in navigator){navigator.serviceWorker.register("/sw.js").catch(function(){})}
