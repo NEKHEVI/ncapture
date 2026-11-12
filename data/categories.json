@@ -2,6 +2,27 @@
   "_note": "Plan comptable des dépenses. 'motifs' = regex (insensible à la casse) testées sur marchand + articles; la catégorie avec le plus de correspondances gagne. 'deductible' = part déductible de l'impôt (repas = 50 %). 'cti_rti' = part de la TPS/TVQ récupérable (repas = 50 %).",
   "categories": [
     {
+      "code": "5910",
+      "nom": "À classer — épicerie",
+      "deductible": 1.0,
+      "cti_rti": 1.0,
+      "alerte": "Catégorie à confirmer",
+      "motifs": [
+        "\\biga\\b",
+        "\\bmetro\\b",
+        "\\bmaxi\\b",
+        "provigo",
+        "super ?c\\b",
+        "loblaws",
+        "adonis",
+        "\\bavril\\b",
+        "marché richelieu",
+        "march[ée] richelieu",
+        "intermarch[ée]",
+        "[ée]picerie"
+      ]
+    },
+    {
       "code": "5100",
       "nom": "Carburant",
       "deductible": 1.0,
@@ -18,9 +39,7 @@
         "costco essence",
         "carburant",
         "essence",
-        "\\blitres?\\b",
-        "diesel",
-        "ordinaire"
+        "diesel"
       ]
     },
     {

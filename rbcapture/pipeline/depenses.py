@@ -187,6 +187,8 @@ Réponds UNIQUEMENT avec un objet JSON, sans texte autour, avec ces clés :
  "confiance": 0.0-1.0,          // ta confiance globale sur les montants
  "notes": str|null              // ce qui est illisible / ambigu
 }
+Le « marchand » est le nom du commerce IMPRIMÉ sur le reçu (en-tête, logo, bas de page) : recopie-le tel quel. Ne le déduis JAMAIS des montants, du type d'achat ou d'un reçu « typique ». S'il est illisible ou coupé, mets null et une confiance <= 0.5.
+Lis chaque montant sur la photo ; n'en calcule aucun.
 N'invente jamais un montant illisible : mets null et explique dans notes."""
 
 
@@ -319,13 +321,18 @@ def categoriser(t: Transaction, cats: list[dict], registre: dict) -> None:
         t.categorie, t.categorie_source = par_code[regle["categorie"]], "règle marchand"
         return
     # 2) mots-clés sur marchand + articles + suggestion du modèle
-    texte = " ".join([t.get("marchand") or "", t.get("categorie_suggeree") or "",
-                      *[a.get("description", "") for a in t.get("articles") or []]]).lower()
+    # Le nom du commerce décide d'abord ; les articles et la suggestion du modèle ne sont qu'un indice.
+    textes = [(t.get("marchand") or "").lower(),
+              " ".join([t.get("marchand") or "", t.get("categorie_suggeree") or "",
+                        *[a.get("description", "") for a in t.get("articles") or []]]).lower()]
     scores = []
-    for i, c in enumerate(cats):
-        n = sum(1 for m in c.get("motifs", []) if re.search(m, texte, re.I))
-        if n:
-            scores.append((n, -i, c))
+    for texte in textes:
+        for i, c in enumerate(cats):
+            n = sum(1 for m in c.get("motifs", []) if re.search(m, texte, re.I))
+            if n:
+                scores.append((n, -i, c))
+        if scores:
+            break
     if scores:
         t.categorie, t.categorie_source = max(scores, key=lambda s: (s[0], s[1]))[2], "mots-clés"
     else:

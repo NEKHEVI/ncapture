@@ -256,8 +256,8 @@ def evaluer(doc: dict, cats: list[dict], registre: dict, par_tps: dict) -> dict:
         t.alertes.append("Date illisible")
     elif _date_future(str(t.data["date"])):
         t.alertes.append("Date invalide ou dans le futur")
-    if not corr and (t.data.get("confiance") or 0) < 0.7:
-        t.alertes.append(f"Confiance de lecture faible ({t.data.get('confiance')})")
+    if not corr and ((t.data.get("confiance") or 0) < 0.7 or not t.data.get("marchand")):
+        t.alertes.append("Lecture incertaine : comparez avec la photo")
     par_code = {c["code"]: c for c in cats}
     if corr.get("categorie") in par_code:
         t.categorie, t.categorie_source = par_code[corr["categorie"]], "corrigée"
