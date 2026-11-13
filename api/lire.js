@@ -3,6 +3,8 @@
 // CAPTURE_DEMO=1 force le mode démo.
 // RBooks Capture — AGPL-3.0.
 
+// La clé est nettoyée (espaces, retours de ligne, guillemets collés par erreur dans Vercel).
+const CLE = () => String(process.env.ANTHROPIC_API_KEY || '').trim().replace(/^["']+|["']+$/g, '');
 const MODEL_RAPIDE = process.env.CAPTURE_MODEL_FAST || 'claude-haiku-5-5';
 const MODEL_PRECIS = process.env.CAPTURE_MODEL_PRECISE || 'claude-sonnet-5-5';
 
@@ -33,7 +35,7 @@ function balance(r) {
 async function lire(model, mediaType, data) {
   const r = await fetch('https://api.anthropic.com/v1/messages', {
     method: 'POST',
-    headers: { 'x-api-key': process.env.ANTHROPIC_API_KEY, 'anthropic-version': '2023-06-01', 'content-type': 'application/json' },
+    headers: { 'x-api-key': CLE(), 'anthropic-version': '2023-06-01', 'content-type': 'application/json' },
     body: JSON.stringify({
       model, max_tokens: 1024,
       messages: [{ role: 'user', content: [
