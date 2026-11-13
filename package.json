@@ -1,1 +1,1 @@
-{"name":"rbooks-capture-mobile","private":true,"type":"module","license":"AGPL-3.0-only"}
+{"name":"rbooks-demo","private":true,"type":"module","license":"AGPL-3.0-only","dependencies":{"@vercel/blob":"2.9.0"}}

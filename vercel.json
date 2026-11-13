@@ -1,1 +1,1 @@
-{"headers":[{"source":"/(.*)","headers":[{"key":"X-Robots-Tag","value":"noindex"},{"key":"X-Content-Type-Options","value":"nosniff"},{"key":"Referrer-Policy","value":"same-origin"}]}],"functions":{"api/lire.js":{"maxDuration":60}}}
+{"cleanUrls":true,"trailingSlash":false,"headers":[{"source":"/(.*)","headers":[{"key":"X-Robots-Tag","value":"noindex"},{"key":"X-Content-Type-Options","value":"nosniff"},{"key":"Referrer-Policy","value":"same-origin"}]}],"functions":{"api/lire.js":{"maxDuration":60}}}

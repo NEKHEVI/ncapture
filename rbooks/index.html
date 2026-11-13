@@ -1,0 +1,307 @@
+<!doctype html>
+<html lang="fr-CA">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>RAWLF · RBooks</title>
+<meta name="robots" content="noindex">
+<link rel="icon" href="/favicon.png">
+<link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Sora:wght@500;600&family=Manrope:wght@400;500;600;700&family=JetBrains+Mono:wght@500&display=swap">
+<script>try{var t=localStorage.getItem("rbooks-theme");if(t)document.documentElement.setAttribute("data-theme",t)}catch(e){}</script>
+<style>
+/* RBooks (démo vendeur) — charte RAWLF « Gold Systems ». Basé sur Bigcapital, AGPL-3.0. */
+:root{--bg:#F6F4EF;--card:#FFFFFF;--raised:#FBFAF7;--border:#E6E1D7;--input:#DDD8CD;--divider:#EEEAE2;
+--fg:#1A1814;--fg2:#4A463F;--muted:#6B665C;--faint:#77726A;--gold:#D9A441;--on-gold:#120E06;--gold-text:#8A6414;--gold-strong:#6E4F0E;
+--brief:#FFF8EA;--brief-b:#E9D3A3;--nav:#F5EBD3;--nav-fg:#6E4F0E;--ok:#1F7A47;--ok-bg:#EAF6EF;--ok-b:#BFE0CC;
+--red:#A3321F;--red-bg:#FCEDEA;--red-b:#EDC2B8;--ora:#9A5B0B;--ora-bg:#FDF3E4;--ora-b:#F0D2A6;--draft:#6E4F0E;--draft-bg:#FBF1DA;--draft-b:#E2C98B;--ring:#D9A441}
+:root[data-theme="dark"]{--bg:#0E0E0F;--card:#131211;--raised:#151413;--border:#22201C;--input:#262320;--divider:#1C1A17;
+--fg:#EDE9E1;--fg2:#C9C3B7;--muted:#A8A193;--faint:#8F897D;--gold-text:#E2B654;--gold-strong:#F3CF7A;--brief:#14120E;--brief-b:#3A3022;--nav:#1A1813;--nav-fg:#F3CF7A;
+--ok:#7FD3A0;--ok-bg:#0F1A13;--ok-b:#24412F;--red:#FF9C8A;--red-bg:#1F1210;--red-b:#5C2A22;--ora:#F2B56B;--ora-bg:#1E160C;--ora-b:#5A3F1C;--draft:#F3CF7A;--draft-bg:#1E190F;--draft-b:#5A4620}
+@media (prefers-color-scheme:dark){:root:not([data-theme="light"]){--bg:#0E0E0F;--card:#131211;--raised:#151413;--border:#22201C;--input:#262320;--divider:#1C1A17;
+--fg:#EDE9E1;--fg2:#C9C3B7;--muted:#A8A193;--faint:#8F897D;--gold-text:#E2B654;--gold-strong:#F3CF7A;--brief:#14120E;--brief-b:#3A3022;--nav:#1A1813;--nav-fg:#F3CF7A;
+--ok:#7FD3A0;--ok-bg:#0F1A13;--ok-b:#24412F;--red:#FF9C8A;--red-bg:#1F1210;--red-b:#5C2A22;--ora:#F2B56B;--ora-bg:#1E160C;--ora-b:#5A3F1C;--draft:#F3CF7A;--draft-bg:#1E190F;--draft-b:#5A4620}}
+
+*{box-sizing:border-box}
+html,body{margin:0;background:var(--bg);color:var(--fg);font:14px/1.5 Manrope,system-ui,sans-serif;-webkit-font-smoothing:antialiased}
+a{color:var(--gold-text)}
+h1,h2,h3{font-family:Sora,sans-serif;font-weight:600;margin:0;letter-spacing:-.01em}
+h1{font-size:22px}h2{font-size:15px}h3{font-size:13px}
+.num,.mono{font-family:"JetBrains Mono",monospace;font-weight:500;font-variant-numeric:tabular-nums}
+.muted{color:var(--muted)}
+.mark{width:32px;height:32px;border-radius:8px;background:#0E0E0F;display:grid;place-items:center;flex:none}
+.mark img{width:22px;height:22px}
+.word{font:600 14px Sora,sans-serif;letter-spacing:.3em}
+.brand{display:flex;align-items:center;gap:10px}
+.brand small{display:block;font:500 11px Manrope;letter-spacing:.02em;color:var(--muted);margin-top:1px}
+.tag{display:inline-flex;align-items:center;gap:5px;font:600 11.5px Manrope;line-height:1.2;padding:3px 8px;border-radius:6px;border:1px solid var(--border);background:var(--raised);color:var(--fg2);white-space:nowrap}
+.tag.rouge{color:var(--red);background:var(--red-bg);border-color:var(--red-b)}
+.tag.orange{color:var(--ora);background:var(--ora-bg);border-color:var(--ora-b)}
+.tag.vert{color:var(--ok);background:var(--ok-bg);border-color:var(--ok-b)}
+.tag.draft{color:var(--draft);background:var(--draft-bg);border-color:var(--draft-b)}
+.btn{display:inline-flex;align-items:center;justify-content:center;gap:8px;height:38px;padding:0 14px;border-radius:10px;border:1px solid var(--input);background:var(--card);color:var(--fg);font:600 13.5px Manrope;cursor:pointer;text-decoration:none}
+.btn:hover{border-color:var(--gold)}
+.btn.gold{background:var(--gold);border-color:var(--gold);color:var(--on-gold)}
+.btn.gold:hover{filter:brightness(.97)}
+.btn.sm{height:32px;padding:0 10px;font-size:12.5px}
+.btn:focus-visible,input:focus-visible,.nav a:focus-visible{outline:2px solid var(--ring);outline-offset:2px}
+.btn svg{width:16px;height:16px}
+.card{background:var(--card);border:1px solid var(--border);border-radius:14px;padding:18px}
+/* coque */
+.app{display:grid;grid-template-columns:236px 1fr;min-height:100vh}
+.side{background:var(--raised);border-right:1px solid var(--border);padding:16px 12px;display:flex;flex-direction:column;gap:14px;position:sticky;top:0;height:100vh}
+.org{padding:10px;border:1px solid var(--border);border-radius:10px;background:var(--card)}
+.org b{display:block;font:600 13px Manrope;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.org span{font-size:11.5px;color:var(--muted)}
+.nav{display:flex;flex-direction:column;gap:2px}
+.nav .sec{font:600 10.5px Manrope;letter-spacing:.1em;text-transform:uppercase;color:var(--faint);padding:12px 10px 4px}
+.nav a{display:flex;align-items:center;gap:10px;padding:8px 10px;border-radius:8px;color:var(--fg2);text-decoration:none;font-weight:600;font-size:13.5px}
+.nav a svg{width:17px;height:17px;flex:none;opacity:.8}
+.nav a:hover{background:var(--card)}
+.nav a.on{background:var(--nav);color:var(--nav-fg)}
+.nav a .cnt{margin-left:auto;background:var(--gold);color:var(--on-gold);font:600 11px Manrope;border-radius:999px;padding:1px 7px}
+.side .foot{margin-top:auto;font-size:11px;color:var(--faint);padding:0 10px}
+.side .foot a{color:var(--faint)}
+.main{min-width:0}
+.top{height:60px;display:flex;align-items:center;gap:10px;padding:0 24px;border-bottom:1px solid var(--border);background:var(--card);position:sticky;top:0;z-index:5}
+.top .t{font:600 16px Sora;flex:1;min-width:0;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.live{display:inline-flex;align-items:center;gap:6px;font:500 11.5px "JetBrains Mono",monospace;color:var(--muted)}
+.live i{width:7px;height:7px;border-radius:50%;background:var(--ok);box-shadow:0 0 0 3px var(--ok-bg)}
+.live.off i{background:var(--red);box-shadow:0 0 0 3px var(--red-bg)}
+.ico{width:38px;height:38px;border-radius:10px;border:1px solid var(--input);background:var(--card);color:var(--fg2);display:grid;place-items:center;cursor:pointer}
+.ico svg{width:17px;height:17px}
+.av{width:34px;height:34px;border-radius:50%;background:var(--nav);color:var(--nav-fg);display:grid;place-items:center;font:600 12px Sora;cursor:pointer;border:1px solid var(--brief-b)}
+.page{padding:24px;max-width:1240px}
+.head{display:flex;align-items:flex-end;justify-content:space-between;gap:16px;margin-bottom:18px;flex-wrap:wrap}
+.head p{margin:4px 0 0;color:var(--muted)}
+.kpis{display:grid;grid-template-columns:repeat(4,1fr);gap:14px;margin-bottom:16px}
+.kpi .l{font-size:12px;color:var(--muted);font-weight:600}
+.kpi .v{font:500 22px "JetBrains Mono",monospace;margin-top:6px;font-variant-numeric:tabular-nums}
+.kpi .s{font-size:12px;color:var(--faint);margin-top:2px}
+.grid2{display:grid;grid-template-columns:1.6fr 1fr;gap:16px}
+.brief{background:var(--brief);border:1px solid var(--brief-b);border-radius:14px;padding:18px}
+.qr{display:flex;gap:16px;align-items:center}
+.qr .box{background:#fff;padding:8px;border-radius:10px;border:1px solid var(--border);flex:none}
+.qr .box img,.qr .box canvas{display:block}
+/* tableaux */
+table{width:100%;border-collapse:collapse}
+th{font:600 11px Manrope;letter-spacing:.06em;text-transform:uppercase;color:var(--muted);text-align:left;padding:10px 12px;border-bottom:1px solid var(--border);background:var(--raised);white-space:nowrap}
+td{padding:11px 12px;border-bottom:1px solid var(--divider);vertical-align:middle}
+tr.cl{cursor:pointer}tr.cl:hover td{background:var(--raised)}
+td.r,th.r{text-align:right}
+td.num,td.r{white-space:nowrap}
+.tw{background:var(--card);border:1px solid var(--border);border-radius:14px;overflow:auto}
+.th{width:34px;height:44px;border-radius:6px;object-fit:cover;border:1px solid var(--border);display:block}
+@keyframes flash{0%{background:var(--brief)}100%{background:transparent}}
+tr.new td{animation:flash 6s ease-out}
+.empty{padding:28px;text-align:center;color:var(--muted)}
+.feed{display:flex;flex-direction:column}
+.feed .it{display:grid;grid-template-columns:40px 1fr auto;gap:12px;align-items:center;padding:10px 0;border-bottom:1px solid var(--divider);cursor:pointer}
+.feed .it:last-child{border-bottom:0}
+.feed .n{font-weight:700}.feed .x{font-size:12px;color:var(--muted)}
+.rows .row{display:flex;justify-content:space-between;gap:12px;padding:9px 0;border-bottom:1px solid var(--divider)}
+.rows .row:last-child{border-bottom:0}
+.rows .row.tot{font-weight:700;border-top:1px solid var(--border);border-bottom:0;padding-top:12px}
+/* tiroir */
+.veil{position:fixed;inset:0;background:rgba(14,14,15,.4);z-index:20;display:none}
+.veil.on{display:block}
+.drawer{position:fixed;top:0;right:0;bottom:0;width:min(640px,100%);background:var(--card);border-left:1px solid var(--border);z-index:21;transform:translateX(100%);transition:transform .2s ease;overflow:auto}
+.drawer.on{transform:none}
+.drawer .dh{display:flex;align-items:center;gap:10px;padding:16px 20px;border-bottom:1px solid var(--border);position:sticky;top:0;background:var(--card)}
+.drawer .dh h2{flex:1}
+.drawer .db{padding:20px}
+.big{font:500 28px "JetBrains Mono",monospace;color:var(--gold-text)}
+.photo{width:100%;max-height:420px;object-fit:contain;background:var(--raised);border:1px solid var(--border);border-radius:10px}
+.kv{display:grid;grid-template-columns:150px 1fr;gap:6px 14px;margin:14px 0}
+.kv dt{color:var(--muted)}.kv dd{margin:0;font-weight:600}
+.alerts{display:flex;flex-wrap:wrap;gap:6px;margin:10px 0}
+/* connexion */
+.login{position:fixed;inset:0;background:var(--bg);z-index:40;display:grid;place-items:center;padding:16px}
+.login .card{width:min(400px,100%);padding:28px}
+.login label{display:block;font-weight:600;font-size:13px;margin:14px 0 6px}
+input{width:100%;height:42px;border:1px solid var(--input);border-radius:10px;background:var(--card);color:var(--fg);font:500 14px Manrope;padding:0 12px}
+.toast{position:fixed;right:20px;bottom:20px;z-index:50;background:var(--fg);color:var(--bg);border-radius:12px;padding:12px 16px;font:600 13.5px Manrope;display:none;max-width:380px;box-shadow:0 6px 24px rgba(0,0,0,.18)}
+.toast.on{display:block}
+.toast b{color:var(--gold)}
+@media (max-width:980px){.kpis{grid-template-columns:repeat(2,1fr)}.grid2{grid-template-columns:1fr}}
+@media (max-width:760px){.app{grid-template-columns:1fr}.side{position:static;height:auto;padding:12px 16px}.side .foot,.org{display:none}.nav{flex-direction:row;overflow:auto;gap:4px}.nav .sec{display:none}.nav a{white-space:nowrap}.page,.top{padding-left:16px;padding-right:16px}.kpis{grid-template-columns:1fr 1fr}.kv{grid-template-columns:1fr}}
+</style>
+</head>
+<body>
+<div class="login" id="login">
+  <form class="card" id="fLogin" autocomplete="on">
+    <div class="brand"><div class="mark"><img src="/logo.png" alt=""></div><div><div class="word">RAWLF</div><small>RBooks · comptabilité</small></div></div>
+    <h1 style="margin-top:22px">Connexion</h1>
+    <p class="muted" style="margin:4px 0 0">Accédez à la comptabilité de votre entreprise.</p>
+    <label for="lu">Courriel</label><input id="lu" autocomplete="username" required>
+    <label for="lp">Mot de passe</label><input id="lp" type="password" autocomplete="current-password" required>
+    <button class="btn gold" style="width:100%;margin-top:20px;height:42px" type="submit">Se connecter</button>
+    <p class="muted" style="font-size:11.5px;margin:16px 0 0;text-align:center">Basé sur Bigcapital · <a href="https://github.com/bigcapitalhq/bigcapital" target="_blank" rel="noopener">Code source (AGPL)</a></p>
+  </form>
+</div>
+<div class="app">
+  <aside class="side">
+    <div class="brand"><div class="mark"><img src="/logo.png" alt=""></div><div><div class="word">RAWLF</div><small>RBooks</small></div></div>
+    <div class="org"><b>Entreprise Démo RBooks inc.</b><span>Exercice 2026 · Québec</span></div>
+    <nav class="nav" id="nav"></nav>
+    <div class="foot">Basé sur Bigcapital · <a href="https://github.com/bigcapitalhq/bigcapital" target="_blank" rel="noopener">Code source</a></div>
+  </aside>
+  <div class="main">
+    <div class="top"><div class="t" id="title">Accueil</div><span class="live" id="live"><i></i>Capture en direct</span>
+      <a class="btn sm" href="/capture" target="capture" id="bCapture">Ouvrir la capture</a>
+      <button class="ico" id="bTheme" type="button" aria-label="Changer le thème"></button><div class="av" id="av" title="Se déconnecter">DR</div></div>
+    <div class="page" id="page"></div>
+  </div>
+</div>
+<div class="veil" id="veil"></div><aside class="drawer" id="drawer" aria-label="Détail"></aside>
+<div class="toast" id="toast"></div>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
+<script>
+"use strict";
+var $=function(i){return document.getElementById(i)};
+var money=function(x){return new Intl.NumberFormat("fr-CA",{style:"currency",currency:"CAD"}).format(Number(x)||0)};
+var r2=function(x){return Math.round((Number(x)||0)*100)/100};
+var esc=function(s){return String(s==null?"":s).replace(/[&<>"']/g,function(c){return{"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c]})};
+var dfr=function(d){if(!d)return"—";var p=String(d).split("-");return p.length===3?p[2]+"/"+p[1]+"/"+p[0]:d};
+function taxes(st){return{tps:r2(st*0.05),tvq:r2(st*0.09975)}}
+
+/* ---- données de démo (fictives) ---- */
+var VENTES=[["FAC-0001","2026-11-02","Boulangerie Le Pétrin inc.","Consultation (1 h)",100,"Payée"],["FAC-0002","2026-11-04","Cabinet Tremblay CPA","Intégration CRM",1200,"Ouverte"],
+ ["FAC-0003","2026-11-06","Garage Lévesque","Formation d'équipe",450,"Ouverte"],["FAC-0004","2026-11-10","Boulangerie Le Pétrin inc.","Soutien mensuel",250,"Ouverte"]].map(function(v){var t=taxes(v[4]);return{no:v[0],date:v[1],client:v[2],desc:v[3],sous_total:v[4],tps:t.tps,tvq:t.tvq,total:r2(v[4]+t.tps+t.tvq),statut:v[5]}});
+var SAISIES=[["FF-1001","2026-11-03","Bell Canada","5600 Télécommunications",89.95],["FF-1002","2026-11-05","Bureau en Gros","5400 Fournitures de bureau",64.20]].map(function(v){var t=taxes(v[4]);
+ return{id:v[0],no:v[0],date:v[1],fournisseur:v[2],categorie:v[3],sous_total:v[4],tps:t.tps,tvq:t.tvq,pourboire:0,total:r2(v[4]+t.tps+t.tvq),no_tps:"123456789RT0001",no_tvq:"1234567890TQ0001",cti_rti:1,source:"Saisie",alertes:[]}});
+
+var CAP=[], vus={}, nouveaux={}, premier=true, view="accueil", CODEKEY="rbooks-capture-code", enLigne=true;
+function achats(){return CAP.concat(SAISIES)}
+function credits(f){var ok=f.no_tps&&f.no_tvq,k=f.cti_rti==null?1:f.cti_rti;return{cti:ok?r2(f.tps*k):0,rti:ok?r2(f.tvq*k):0}}
+function cout(f){var c=credits(f);return r2(f.sous_total+f.pourboire+(f.tps-c.cti)+(f.tvq-c.rti))}
+function sum(l,fn){return r2(l.reduce(function(a,x){return a+fn(x)},0))}
+
+var IC={home:'<path d="M3 11l9-7 9 7v9H3z"/>',ventes:'<path d="M5 3h10l4 4v14H5z"/><path d="M9 12h6M9 16h6"/>',achats:'<path d="M3 5h18l-2 12H5z"/><circle cx="9" cy="20" r="1"/><circle cx="17" cy="20" r="1"/>',
+ taxes:'<path d="M19 5L5 19"/><circle cx="7" cy="7" r="2.5"/><circle cx="17" cy="17" r="2.5"/>',rapports:'<path d="M4 20V10M10 20V4M16 20v-7M22 20H2"/>',cap:'<path d="M4 8h3l2-3h6l2 3h3v11H4z"/><circle cx="12" cy="13" r="3.5"/>',reg:'<circle cx="12" cy="12" r="3"/><path d="M12 2v3M12 19v3M2 12h3M19 12h3M5 5l2 2M17 17l2 2M5 19l2-2M17 7l2-2"/>'};
+var svg=function(k){return'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">'+IC[k]+'</svg>'};
+var VUES=[["accueil","Accueil","home"],["sec","Ventes"],["ventes","Factures de vente","ventes"],["sec","Achats"],["achats","Factures fournisseurs","achats"],["sec","Comptabilité"],["taxes","TPS / TVQ","taxes"],["rapports","États financiers","rapports"],["sec","Système"],["reglages","Réglages de la démo","reg"]];
+
+function nav(){var nb=Object.keys(nouveaux).length;$("nav").innerHTML=VUES.map(function(v){if(v[0]==="sec")return'<div class="sec">'+v[1]+'</div>';
+  return'<a href="#'+v[0]+'" class="'+(view===v[0]?"on":"")+'">'+svg(v[2])+v[1]+(v[0]==="achats"&&nb?'<span class="cnt">'+nb+'</span>':"")+'</a>'}).join("")+
+  '<a href="/capture" target="capture">'+svg("cap")+'Capture (téléphone)</a>'}
+
+function render(){
+  var t=VUES.filter(function(v){return v[0]===view})[0]; $("title").textContent=t?t[1]:"Accueil"; nav();
+  $("page").innerHTML=({accueil:vAccueil,ventes:vVentes,achats:vAchats,taxes:vTaxes,rapports:vRapports,reglages:vReglages}[view]||vAccueil)();
+  if(view==="accueil") qr();
+  if(view==="achats"){setTimeout(function(){nouveaux={};nav()},6000)}
+}
+function srcTag(f){return f.source==="Capture"?'<span class="tag draft">Capture</span>':'<span class="tag">Saisie</span>'}
+function alerteTag(f){return f.alertes&&f.alertes.length?'<span class="tag orange">'+f.alertes.length+' à vérifier</span>':'<span class="tag vert">Vérifiée</span>'}
+
+function vAccueil(){
+  var A=achats(), rev=sum(VENTES,function(v){return v.sous_total}), dep=sum(A,cout), cr=sum(A,function(f){var c=credits(f);return c.cti+c.rti});
+  var net=r2(sum(VENTES,function(v){return v.tps+v.tvq})-cr), ar=sum(VENTES.filter(function(v){return v.statut!=="Payée"}),function(v){return v.total});
+  var feed=CAP.slice(0,6).map(function(f){return'<div class="feed it" data-f="'+esc(f.id)+'">'+(f.thumb?'<img class="th" src="'+f.thumb+'" alt="">':'<div class="th"></div>')+
+    '<div><div class="n">'+esc(f.fournisseur)+'</div><div class="x">'+esc(f.no)+' · '+esc(f.categorie)+' · reçue '+depuis(f.recu)+'</div></div><div class="num">'+money(f.total)+'</div></div>'}).join("");
+  return'<div class="head"><div><h1>Bonjour</h1><p>Novembre 2026 · les chiffres se mettent à jour quand une facture arrive de la capture.</p></div></div>'+
+  '<div class="kpis">'+kpi("Revenus du mois",money(rev),VENTES.length+" factures de vente")+kpi("Dépenses du mois",money(dep),A.length+" factures fournisseurs")+
+  kpi("TPS/TVQ nette à remettre",money(net),"Perçue moins CTI/RTI")+kpi("Comptes clients",money(ar),"À recevoir")+'</div>'+
+  '<div class="grid2"><div class="card"><div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:6px"><h2>Arrivées de la capture</h2><a href="#achats" class="btn sm">Tout voir</a></div>'+
+  (feed?'<div class="feed">'+feed+'</div>':'<div class="empty">Aucune facture capturée pour l\'instant.<br>Prenez un reçu en photo avec le téléphone : il apparaîtra ici en quelques secondes.</div>')+'</div>'+
+  '<div class="brief"><h2>Capturer une facture</h2><p class="muted" style="margin:6px 0 14px">Scannez avec le téléphone, photographiez un reçu, approuvez : la facture fournisseur arrive ici avec la TPS et la TVQ.</p>'+
+  '<div class="qr"><div class="box" id="qr"></div><div><div class="mono" style="font-size:12px;word-break:break-all">'+esc(location.origin)+'/capture</div><a class="btn gold sm" style="margin-top:10px" href="/capture" target="capture">Ouvrir ici</a></div></div></div></div>';
+}
+function kpi(l,v,s){return'<div class="card kpi"><div class="l">'+l+'</div><div class="v">'+v+'</div><div class="s">'+s+'</div></div>'}
+function qr(){var el=$("qr");if(!el)return;el.innerHTML="";try{new QRCode(el,{text:location.origin+"/capture",width:132,height:132,colorDark:"#1A1814",colorLight:"#FFFFFF",correctLevel:QRCode.CorrectLevel.M})}catch(e){el.textContent="QR indisponible"}}
+function depuis(iso){var s=(Date.now()-new Date(iso).getTime())/1000;if(!(s>=0))return"";if(s<60)return"à l'instant";if(s<3600)return"il y a "+Math.floor(s/60)+" min";return"le "+new Date(iso).toLocaleString("fr-CA",{day:"numeric",month:"short",hour:"2-digit",minute:"2-digit"})}
+
+function vVentes(){
+  return'<div class="head"><div><h1>Factures de vente</h1><p>TPS 5 % et TVQ 9,975 % calculées ligne par ligne.</p></div><button class="btn gold" onclick="toast(\'Démo : la création de facture se fait dans RBooks complet.\')">+ Nouvelle facture</button></div>'+
+  '<div class="tw"><table><thead><tr><th>Date</th><th>No</th><th>Client</th><th class="r">Sous-total</th><th class="r">TPS</th><th class="r">TVQ</th><th class="r">Total</th><th>Statut</th></tr></thead><tbody>'+
+  VENTES.map(function(v){return'<tr><td class="num">'+dfr(v.date)+'</td><td class="num">'+v.no+'</td><td>'+esc(v.client)+'</td><td class="r num">'+money(v.sous_total)+'</td><td class="r num">'+money(v.tps)+'</td><td class="r num">'+money(v.tvq)+'</td><td class="r num"><b>'+money(v.total)+'</b></td><td>'+(v.statut==="Payée"?'<span class="tag vert">Payée</span>':'<span class="tag draft">Ouverte</span>')+'</td></tr>'}).join("")+'</tbody></table></div>';
+}
+function vAchats(){
+  var A=achats();
+  return'<div class="head"><div><h1>Factures fournisseurs</h1><p>Les factures marquées « Capture » viennent du téléphone, avec la photo jointe.</p></div><a class="btn gold" href="/capture" target="capture">'+svg("cap")+'Capturer une facture</a></div>'+
+  '<div class="tw"><table><thead><tr><th></th><th>Reçue</th><th>No</th><th>Fournisseur</th><th>Catégorie</th><th class="r">Sous-total</th><th class="r">TPS</th><th class="r">TVQ</th><th class="r">Total</th><th>Source</th><th>Contrôle</th></tr></thead><tbody>'+
+  A.map(function(f){return'<tr class="cl'+(nouveaux[f.id]?" new":"")+'" data-f="'+esc(f.id)+'"><td>'+(f.thumb?'<img class="th" src="'+f.thumb+'" alt="">':"")+'</td><td class="num">'+dfr(f.date)+'</td><td class="num">'+esc(f.no)+'</td><td><b>'+esc(f.fournisseur)+'</b></td><td>'+esc(f.categorie)+'</td><td class="r num">'+money(f.sous_total)+'</td><td class="r num">'+money(f.tps)+'</td><td class="r num">'+money(f.tvq)+'</td><td class="r num"><b>'+money(f.total)+'</b></td><td>'+srcTag(f)+'</td><td>'+alerteTag(f)+'</td></tr>'}).join("")+'</tbody></table></div>';
+}
+function vTaxes(){
+  var A=achats(), tps=sum(VENTES,function(v){return v.tps}), tvq=sum(VENTES,function(v){return v.tvq}), cti=sum(A,function(f){return credits(f).cti}), rti=sum(A,function(f){return credits(f).rti});
+  var perdus=A.filter(function(f){return(f.tps||f.tvq)&&!(f.no_tps&&f.no_tvq)});
+  return'<div class="head"><div><h1>TPS / TVQ</h1><p>Période du 1er au 30 novembre 2026 · méthode de comptabilité d\'exercice.</p></div></div>'+
+  '<div class="grid2"><div class="card rows"><h2 style="margin-bottom:8px">TPS (fédéral)</h2>'+row("TPS perçue sur les ventes",tps)+row("CTI réclamés sur les achats",-cti)+row("TPS nette à remettre",r2(tps-cti),1)+
+  '<h2 style="margin:18px 0 8px">TVQ (Québec)</h2>'+row("TVQ perçue sur les ventes",tvq)+row("RTI réclamés sur les achats",-rti)+row("TVQ nette à remettre",r2(tvq-rti),1)+'</div>'+
+  '<div class="brief"><h2>Contrôles</h2><p class="muted" style="margin:6px 0 10px">Un CTI/RTI n\'est réclamé que si la facture porte les numéros de TPS et de TVQ du fournisseur. Les repas sont réclamés à 50 %.</p>'+
+  (perdus.length?perdus.map(function(f){return'<div style="margin:6px 0"><span class="tag orange">CTI/RTI non réclamé</span> '+esc(f.fournisseur)+' · '+money(f.tps+f.tvq)+' (numéro de taxe absent)</div>'}).join(""):'<span class="tag vert">Toutes les factures ont leurs numéros de taxes</span>')+'</div></div>';
+}
+function row(l,v,tot){return'<div class="row'+(tot?" tot":"")+'"><span>'+l+'</span><span class="num">'+money(v)+'</span></div>'}
+function vRapports(){
+  var A=achats(), rev=sum(VENTES,function(v){return v.sous_total}), cats={};
+  A.forEach(function(f){cats[f.categorie]=r2((cats[f.categorie]||0)+cout(f))});
+  var dep=sum(A,cout), ks=Object.keys(cats).sort();
+  var ar=sum(VENTES.filter(function(v){return v.statut!=="Payée"}),function(v){return v.total}), ap=sum(A,function(f){return f.total});
+  var tx=r2(sum(VENTES,function(v){return v.tps+v.tvq})-sum(A,function(f){var c=credits(f);return c.cti+c.rti}));
+  var banque=r2(25000+VENTES.filter(function(v){return v.statut==="Payée"}).reduce(function(a,v){return a+v.total},0));
+  return'<div class="head"><div><h1>États financiers</h1><p>Novembre 2026 · se met à jour avec chaque facture capturée.</p></div></div><div class="grid2"><div class="card rows"><h2 style="margin-bottom:8px">État des résultats</h2>'+
+  row("Revenus",rev)+ks.map(function(k){return row(esc(k),-cats[k])}).join("")+row("Total des dépenses",-dep,1)+row("Bénéfice net",r2(rev-dep),1)+'</div>'+
+  '<div class="card rows"><h2 style="margin-bottom:8px">Bilan (extrait)</h2>'+row("Encaisse",banque)+row("Comptes clients",ar)+row("Comptes fournisseurs",-ap)+row("TPS/TVQ nette à remettre",-tx)+row("Avoir net (extrait)",r2(banque+ar-ap-tx),1)+'</div></div>';
+}
+function vReglages(){
+  return'<div class="head"><div><h1>Réglages de la démo</h1><p>Pour repartir à neuf avant une présentation.</p></div></div><div class="card" style="max-width:620px"><h2>Remettre la démo à zéro</h2>'+
+  '<p class="muted">Efface les factures reçues de la capture ('+CAP.length+'). Les factures de démonstration restent. Sur le téléphone, la liste de la capture se vide avec son propre bouton (Exporter).</p>'+
+  '<button class="btn" id="bReset">Remettre à zéro</button><p class="muted" style="font-size:12px;margin-top:14px">Stockage : <span class="mono" id="stk">…</span></p></div>';
+}
+
+/* ---- tiroir ---- */
+function ouvrir(id){var f=achats().filter(function(x){return x.id===id})[0];if(!f)return;var c=credits(f), ch=r2(f.sous_total+f.pourboire+(f.tps-c.cti)+(f.tvq-c.rti));
+  $("drawer").innerHTML='<div class="dh"><h2>Facture fournisseur '+esc(f.no)+'</h2>'+srcTag(f)+'<button class="ico" id="bX" aria-label="Fermer">✕</button></div><div class="db">'+
+  '<div class="muted">Montant</div><div class="big">'+money(f.total)+'</div>'+(f.alertes&&f.alertes.length?'<div class="alerts">'+f.alertes.map(function(a){return'<span class="tag orange">'+esc(a)+'</span>'}).join("")+'</div>':"")+
+  '<dl class="kv"><dt>Fournisseur</dt><dd>'+esc(f.fournisseur)+'</dd><dt>Date</dt><dd class="num">'+dfr(f.date)+'</dd><dt>No de facture</dt><dd class="num">'+esc(f.numero||"—")+'</dd><dt>Catégorie</dt><dd>'+esc(f.categorie)+'</dd>'+
+  '<dt>No TPS</dt><dd class="num">'+esc(f.no_tps||"absent")+'</dd><dt>No TVQ</dt><dd class="num">'+esc(f.no_tvq||"absent")+'</dd>'+(f.recu?'<dt>Reçue</dt><dd>'+depuis(f.recu)+'</dd>':"")+'</dl>'+
+  '<div class="card rows" style="padding:12px 16px">'+row("Sous-total",f.sous_total)+row("TPS 5 %",f.tps)+row("TVQ 9,975 %",f.tvq)+(f.pourboire?row("Pourboire",f.pourboire):"")+row("Total",f.total,1)+'</div>'+
+  '<h3 style="margin:20px 0 8px">Écriture de journal</h3><div class="tw"><table><thead><tr><th>Compte</th><th class="r">Débit</th><th class="r">Crédit</th></tr></thead><tbody>'+
+  '<tr><td>'+esc(f.categorie)+'</td><td class="r num">'+money(ch)+'</td><td></td></tr>'+(c.cti?'<tr><td>1180 TPS à recevoir (CTI)</td><td class="r num">'+money(c.cti)+'</td><td></td></tr>':"")+(c.rti?'<tr><td>1185 TVQ à recevoir (RTI)</td><td class="r num">'+money(c.rti)+'</td><td></td></tr>':"")+
+  '<tr><td>2000 Comptes fournisseurs</td><td></td><td class="r num">'+money(f.total)+'</td></tr></tbody></table></div>'+
+  (f.thumb?'<h3 style="margin:20px 0 8px">Pièce jointe</h3><img class="photo" src="'+f.thumb+'" alt="Photo de la facture">':"")+'</div>';
+  $("drawer").classList.add("on");$("veil").classList.add("on");$("bX").onclick=fermer}
+function fermer(){$("drawer").classList.remove("on");$("veil").classList.remove("on")}
+$("veil").onclick=fermer;document.addEventListener("keydown",function(e){if(e.key==="Escape")fermer()});
+
+/* ---- synchro avec la capture ---- */
+function charger(){
+  return fetch("/api/factures",{cache:"no-store"}).then(function(r){if(!r.ok)throw 0;return r.json()}).then(function(j){
+    enLigne=true;$("live").className="live";var l=(j.factures||[]).map(function(f){f.pourboire=f.pourboire||0;return f}), arr=[];
+    l.forEach(function(f){if(!vus[f.id]){vus[f.id]=1;if(!premier){nouveaux[f.id]=1;arr.push(f)}}});
+    var change=l.length!==CAP.length||arr.length; CAP=l; window.__stk=j.stockage;
+    if(arr.length){toast('<b>Nouvelle facture de la capture</b><br>'+esc(arr[0].fournisseur)+' · '+money(arr[0].total)+(arr.length>1?' (+'+(arr.length-1)+')':""))}
+    if((change||premier)&&!$("drawer").classList.contains("on")) render(); else nav();
+    var s=$("stk"); if(s) s.textContent=j.stockage==="memoire"?"mémoire temporaire (à configurer)":j.stockage;
+    premier=false;
+  }).catch(function(){enLigne=false;$("live").className="live off"});
+}
+
+var tT;function toast(h){var t=$("toast");t.innerHTML=h;t.classList.add("on");clearTimeout(tT);tT=setTimeout(function(){t.classList.remove("on")},5000)}
+$("page").addEventListener("click",function(e){var x=e.target.closest("[data-f]");if(x)return ouvrir(x.getAttribute("data-f"));
+  if(e.target.id==="bReset"){if(!confirmer())return;var h={},c=localStorage.getItem(CODEKEY);if(c)h["x-capture-code"]=c;
+    fetch("/api/factures",{method:"DELETE",headers:h}).then(function(r){if(r.status===401){var v=prompt("Code d'accès de la démo");if(v){localStorage.setItem(CODEKEY,v)}throw 0}if(!r.ok)throw 0;CAP=[];vus={};nouveaux={};render();toast("Démo remise à zéro")}).catch(function(){toast("Remise à zéro non faite")})}});
+var arm=0;function confirmer(){if(Date.now()-arm<4000)return true;arm=Date.now();toast("Cliquez encore une fois pour confirmer la remise à zéro");return false}
+window.addEventListener("hashchange",function(){view=(location.hash||"#accueil").slice(1);fermer();render();window.scrollTo(0,0)});
+
+/* ---- connexion de démo : tout identifiant entre ---- */
+function sess(){try{return localStorage.getItem("rbooks-demo-session")}catch(e){return null}}
+$("fLogin").onsubmit=function(e){e.preventDefault();try{localStorage.setItem("rbooks-demo-session",$("lu").value.trim())}catch(x){};$("login").style.display="none";initiales()};
+$("av").onclick=function(){try{localStorage.removeItem("rbooks-demo-session")}catch(e){};$("login").style.display="grid"};
+function initiales(){var u=(sess()||"Démo RBooks").replace(/@.*/,"").split(/[.\s_-]+/);$("av").textContent=((u[0]||"D")[0]+((u[1]||u[0]||"R")[u[1]?0:1]||"R")).toUpperCase()}
+if(sess()){$("login").style.display="none";initiales()}
+
+/* ---- thème ---- */
+var SUN='<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><circle cx="12" cy="12" r="4"/><path d="M12 2v2M12 20v2M2 12h2M20 12h2M4.9 4.9l1.4 1.4M17.7 17.7l1.4 1.4M4.9 19.1l1.4-1.4M17.7 6.3l1.4-1.4"/></svg>',
+    MOON='<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M20 14.5A8 8 0 019.5 4a8 8 0 1010.5 10.5z"/></svg>';
+function sombre(){var a=document.documentElement.getAttribute("data-theme");return a?a==="dark":matchMedia("(prefers-color-scheme: dark)").matches}
+function majTheme(){$("bTheme").innerHTML=sombre()?SUN:MOON}
+$("bTheme").onclick=function(){var t=sombre()?"light":"dark";document.documentElement.setAttribute("data-theme",t);try{localStorage.setItem("rbooks-theme",t)}catch(e){};majTheme()};
+majTheme();
+
+view=(location.hash||"#accueil").slice(1); render(); charger(); setInterval(function(){if(!document.hidden)charger()},3000);
+setInterval(function(){if(view==="accueil"&&!$("drawer").classList.contains("on"))render()},60000);
+</script>
+</body>
+</html>
