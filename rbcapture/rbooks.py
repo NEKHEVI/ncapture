@@ -197,10 +197,12 @@ class Client:
         """Compte « TPS (CTI) à recevoir » ou « TVQ (RTI) à recevoir » (genre = 'tps' ou 'tvq')."""
         if "comptes" not in self._cache:
             self._cache["comptes"] = _liste(self._req("GET", "/accounts"))
-        code = {"tps": "10011", "tvq": "10012"}[genre]
+        # 10011/10012 : organisation de démo ; 1210/1220 : plan comptable du Québec (tâche 11).
+        codes = {"tps": ("10011", "1210"), "tvq": ("10012", "1220")}[genre]
+        code = codes[0]
         sigle = genre.upper()
         for c in self._cache["comptes"]:
-            if str(c.get("code") or "") == code:
+            if str(c.get("code") or "") in codes:
                 return c["id"]
         for c in self._cache["comptes"]:
             nom = str(c.get("name") or "")
