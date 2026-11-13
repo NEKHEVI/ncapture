@@ -21,6 +21,8 @@ from pathlib import Path
 
 import requests
 
+from . import taxes
+
 PRET = Path(os.environ.get("RBOOKS_PRET", r"C:\DEV\CODEGOD\RAWLF\_tmp_rbooks\SERVEUR-PRET.txt"))
 SECRETS = Path(os.environ.get("RBOOKS_SECRETS", r"C:\DEV\CODEGOD\RAWLF\secrets\rbooks-demo.txt"))
 
@@ -130,7 +132,7 @@ class Client:
         self.h = {"Authorization": f"Bearer {tok}", "organization-id": str(org)}
 
     # --- ressources ---------------------------------------------------------
-    def fournisseur(self, nom: str, no_tps: str = "") -> int:
+    def fournisseur(self, nom: str, no_tps: str = "", no_tvq: str = "") -> int:
         cle = f"v:{nom.lower()}"
         if cle in self._cache:
             return self._cache[cle]
@@ -138,7 +140,8 @@ class Client:
             if str(v.get("display_name") or v.get("displayName") or "").lower() == nom.lower():
                 self._cache[cle] = v["id"]
                 return v["id"]
-        note = f"Créé par RBooks Capture. No TPS : {no_tps}" if no_tps else "Créé par RBooks Capture."
+        nos = " ".join(x for x in (f"No TPS : {no_tps}." if no_tps else "", f"No TVQ : {no_tvq}." if no_tvq else "") if x)
+        note = f"Créé par RBooks Capture. {nos}".strip()
         vid = _id(self._req("POST", "/vendors", json={"displayName": nom, "companyName": nom,
                                                       "currencyCode": "CAD", "active": True, "note": note}))
         self._cache[cle] = vid
@@ -190,35 +193,57 @@ class Client:
             raise RBooksErreur("Téléversement de la photo : pas de clé retournée.")
         return cle
 
+    def compte_taxe(self, genre: str) -> int:
+        """Compte « TPS (CTI) à recevoir » ou « TVQ (RTI) à recevoir » (genre = 'tps' ou 'tvq')."""
+        if "comptes" not in self._cache:
+            self._cache["comptes"] = _liste(self._req("GET", "/accounts"))
+        code = {"tps": "10011", "tvq": "10012"}[genre]
+        sigle = genre.upper()
+        for c in self._cache["comptes"]:
+            if str(c.get("code") or "") == code:
+                return c["id"]
+        for c in self._cache["comptes"]:
+            nom = str(c.get("name") or "")
+            if sigle in nom.upper() and ("recevoir" in nom.lower() or "receivable" in nom.lower()):
+                return c["id"]
+        raise RBooksErreur(f"Compte « {sigle} à recevoir » introuvable dans RBooks (code {code}).")
+
     def facture_fournisseur(self, r: dict, doc_id: str, photos: list[Path]) -> int:
-        """Crée la facture fournisseur à partir d'un résultat évalué. Retourne l'id du Bill."""
+        """Crée la facture fournisseur à partir d'un résultat évalué. Retourne l'id du Bill.
+
+        Les taxes sont ventilées par `taxes.repartir` : la part réclamable de la TPS et de la TVQ
+        est imputée directement aux comptes de taxes à recevoir (CTI/RTI) ; le reste est en dépense.
+        Le total du Bill égale toujours le total du reçu.
+        """
         marchand = r["marchand"] or "Fournisseur inconnu"
-        vendor = self.fournisseur(marchand, r["no_tps"])
+        vendor = self.fournisseur(marchand, r["no_tps"], r.get("no_tvq", ""))
         item = self.article(r["categorie_code"], r["categorie"])
         total = Decimal(r["total"])
-        lignes = [("Sous-total", r["sous_total"]), ("TPS (5 %)", r["tps"]), ("TVQ (9,975 %)", r["tvq"]),
-                  ("Pourboire", r["pourboire"])]
-        entrees = [(lib, Decimal(v)) for lib, v in lignes if v not in ("", None) and Decimal(v) != 0]
-        ecart = total - sum((m for _, m in entrees), Decimal("0"))
-        if not entrees:
-            entrees = [("Total", total)]
-        elif ecart != 0:  # garantit que le Bill égale le total payé
-            entrees[0] = (entrees[0][0], entrees[0][1] + ecart)
+        rep = taxes.repartir(r)
+        assert rep.total == total, "répartition des taxes : le total ne correspond pas au reçu"
+        comptes = {}
+        for l in rep.lignes:
+            if l["cible"] in ("tps", "tvq") and l["cible"] not in comptes:
+                comptes[l["cible"]] = self.compte_taxe(l["cible"])
         cles = [self.piece_jointe(p) for p in photos]
         date = r["date"] or None
         if not date:
             raise RBooksErreur("Date manquante : corrigez la facture avant l'envoi.")
+        entrees = []
+        for i, l in enumerate(rep.lignes):
+            e = {"index": i + 1, "itemId": item, "rate": float(l["montant"]), "quantity": 1,
+                 "description": f"{l['libelle']} - {marchand}"}
+            if l["cible"] in comptes:
+                e["costAccountId"] = comptes[l["cible"]]
+            entrees.append(e)
         corps = {
             "billNumber": f"CAP-{doc_id}" + (f"-{r['no_facture']}" if r["no_facture"] else ""),
             "billDate": date, "dueDate": date, "vendorId": vendor, "open": True,
-            "note": f"Capture photo {doc_id} - {r['categorie_code']} {r['categorie']}. "
-                    f"CTI {r['cti']} $ / RTI {r['rti']} $ (voir tâche taxes).",
-            "entries": [{"index": i + 1, "itemId": item, "rate": float(m), "quantity": 1, "description": f"{lib} - {marchand}"}
-                        for i, (lib, m) in enumerate(entrees)],
+            "note": f"Capture photo {doc_id} - {r['categorie_code']} {r['categorie']}. {rep.note}",
+            "entries": entrees,
             "attachments": [{"key": k} for k in cles],
         }
         return _id(self._req("POST", "/bills", json=corps))
-
 
 def _resume(r) -> str:
     try:

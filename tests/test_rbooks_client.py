@@ -33,7 +33,9 @@ class Faux(BaseHTTPRequestHandler):
         if self.path.startswith("/api/vendors") or self.path.startswith("/api/items"):
             return self._rep(200, {"data": []})
         if self.path.startswith("/api/accounts"):
-            return self._rep(200, {"accounts": [{"id": 7, "code": "5200", "name": "Repas", "root_type": "expense"}]})
+            return self._rep(200, {"accounts": [{"id": 7, "code": "5200", "name": "Repas", "root_type": "expense"},
+                                           {"id": 20, "code": "10011", "name": "TPS à recevoir (CTI)", "root_type": "asset"},
+                                           {"id": 21, "code": "10012", "name": "TVQ à recevoir (RTI)", "root_type": "asset"}]})
         self._rep(404, {})
 
     def do_POST(self):
@@ -71,4 +73,7 @@ def test_facture_fournisseur_avec_piece_jointe(tmp_path, monkeypatch):
     assert corps["attachments"] == [{"key": "abc123"}] and corps["vendorId"] == 11 and corps["open"] is True
     assert round(sum(e["rate"] * e["quantity"] for e in corps["entries"]), 2) == 30.41  # = total payé
     assert corps["billDate"] == "2026-06-27"
+    # Les taxes réclamables vont aux comptes à recevoir (si le reçu a les numéros de taxe), sinon tout en dépense.
+    imputes = {e.get("costAccountId") for e in corps["entries"]} - {None}
+    assert imputes <= {20, 21}
     assert ("POST", "/api/bills", "Bearer jeton-bidon") in JOURNAL
