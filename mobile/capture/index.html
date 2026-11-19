@@ -193,7 +193,10 @@ function ouvrir(id){
   var t=function(k,l,im){return '<div><label for="f_'+k+'">'+l+'</label><input id="f_'+k+'" inputmode="'+(im||"text")+'" autocomplete="off" value="'+esc(r[k]==null?"":r[k])+'"></div>'};
   var f=function(k){return '<div class="fig'+(k==="total"?' total':'')+'" id="g_'+k+'"><label for="f_'+k+'">'+NOMS[k]+'</label><input id="f_'+k+'" inputmode="decimal" autocomplete="off" enterkeyhint="next" value="'+vNum(r[k])+'" placeholder="0,00"></div>'};
   $("sheetIn").innerHTML='<div class="grab"></div>'+
-  '<div class="side"><div class="ph-big'+(lec?' scan':'')+'">'+(i.thumb?'<img src="'+i.thumb+'" alt="Photo de la facture">':'')+'</div><div class="tags" id="fTags" style="margin:0 0 4px"></div></div>'+
+  '<div class="side"><div class="ph-big'+(lec?' scan':'')+'">'+(i.thumb?'<img src="'+i.thumb+'" alt="Photo de la facture">':'')+'</div><div class="tags" id="fTags" style="margin:0 0 4px"></div>'+
+  ((i.photos&&i.photos.length)?'<div class="tags" style="margin:4px 0">'+i.photos.map(function(p,k){return '<img src="'+p+'" alt="Photo '+(k+2)+'" style="height:56px;width:auto;border-radius:8px;border:1px solid var(--nk-border)">'}).join("")+'</div>':'')+
+  (!lec&&i.etat!=="approuvee"?'<div style="margin:6px 0 4px"><button type="button" class="btn" id="bRe" style="width:100%">Reprendre une photo pour compléter</button><p class="note" style="margin:6px 0 0">Il manque une date, un montant ou un numéro ? Photographiez la partie manquante : seuls les champs vides sont remplis, rien de ce que vous avez saisi n’est remplacé.</p><input type="file" id="fRe" accept="image/*" capture="environment" hidden></div>':'')+
+  '</div>'+
   '<div class="form"><p class="eyebrow" style="margin:6px 0 0">'+(lec?"Lecture en cours…":i.etat==="approuvee"?"Approuvée":"Vérifiez la lecture")+'</p>'+
   '<div class="who"><label for="f_fournisseur" class="sr">Fournisseur</label><input id="f_fournisseur" autocomplete="off" placeholder="Fournisseur" value="'+esc(r.fournisseur||"")+'"></div>'+
   '<div class="g2">'+t("date","Date (AAAA-MM-JJ)")+t("numero","No de facture")+'</div>'+
@@ -218,9 +221,40 @@ function ouvrir(id){
   $("bSave").onclick=function(){lireForm();save();fermer();render();toast(i.alertes.length?i.alertes.length+" point(s) restant(s)":"Montants vérifiés")};
   if($("bOk")) $("bOk").onclick=function(){lireForm();i.etat="approuvee";save();fermer();render();toast("Approuvée : prête pour NBooks")};
   if($("bFerm")) $("bFerm").onclick=fermer;
+  if($("bRe")){ $("bRe").onclick=function(){$("fRe").click()};
+    $("fRe").onchange=function(){var fl=this.files&&this.files[0]; this.value=""; if(!fl) return; lireForm(); save(); completer(id,fl)}; }
   $("bRej").onclick=function(){var b=$("bRej");if(!b.dataset.c){b.dataset.c=1;b.textContent="Confirmer";return}items=items.filter(function(x){return x.id!==id});save();fermer();render();toast("Facture retirée")};
 }
 function fermer(){$("sheet").classList.remove("on");ouvertId=null}
+/* 2e photo de la même facture : remplit seulement les champs encore vides */
+var NOMS_TXT={fournisseur:"fournisseur",date:"date",numero:"no de facture",no_tps:"no TPS",no_tvq:"no TVQ"};
+function completer(id,file){
+  var i=items.find(function(x){return x.id===id}); if(!i) return;
+  var ph=document.querySelector("#sheetIn .ph-big"); if(ph) ph.classList.add("scan");
+  var b=$("bRe"); if(b){b.disabled=true;b.textContent="Lecture de la 2e photo…"}
+  Promise.all([reduire(file,1600,.82),reduire(file,360,.7)]).then(function(v){
+    i.photos=(i.photos||[]).concat([v[1]]);
+    var h={"Content-Type":"application/json"}, c=code(); if(c) h["x-capture-code"]=c;
+    return fetch("/api/lire",{method:"POST",headers:h,body:JSON.stringify({image:v[0]})});
+  }).then(function(r){
+    if(r.status===401){try{localStorage.removeItem(CODEKEY)}catch(e){}throw new Error("code")}
+    if(!r.ok) throw new Error("lecture");
+    return r.json();
+  }).then(function(j){
+    if(j.mode==="non-lu") throw new Error("demo");
+    var nv=j.resultat||{}, r=i.r||{}, ajout=[];
+    TXT.forEach(function(k){if(!String(r[k]==null?"":r[k]).trim()&&String(nv[k]==null?"":nv[k]).trim()){r[k]=String(nv[k]).trim();ajout.push(NOMS_TXT[k])}});
+    MONT.forEach(function(k){if(!(Number(r[k])>0)&&Number(nv[k])>0){r[k]=Number(nv[k]);ajout.push(NOMS[k])}});
+    var arts=(r.articles||[]).slice(); (nv.articles||[]).forEach(function(a){if(arts.indexOf(a)<0)arts.push(a)}); r.articles=arts;
+    if(ajout.length) r.confiance=Math.max(Number(r.confiance)||0,Number(nv.confiance)||0);
+    i.r=r; i.mode="ia"; if(j.modele) i.modele=j.modele; enrichir(i); save(); render(); if(ouvertId===id) ouvrir(id);
+    toast(ajout.length?"Complétée : "+ajout.join(", "):"Rien de nouveau sur cette photo : saisissez à la main");
+  }).catch(function(e){
+    save(); if(ouvertId===id) ouvrir(id);
+    toast(e.message==="code"?"Code d'accès requis":e.message==="demo"?"Mode démo : photo non lue":"Lecture impossible, réessayez");
+    if(e.message==="code") demanderCode();
+  });
+}
 $("sheet").addEventListener("click",function(e){if(e.target.id==="sheet")fermer()});
 document.addEventListener("keydown",function(e){if(e.key==="Escape"){fermer();NC.fermerViseur()}});
 
