@@ -1,6 +1,6 @@
-// /api/factures — factures fournisseurs envoyées par la capture, lues par la page RBooks.
+// /api/factures — factures fournisseurs envoyées par la capture, lues par la page NBooks.
 // GET : liste ; POST : ajoute ; DELETE : remet la démo à zéro. Code d'accès CAPTURE_CODE si défini (POST/DELETE).
-// RBooks démo — AGPL-3.0.
+// NCapture (NEKHEVI), démo NBooks, AGPL-3.0.
 import { lister, ajouter, vider, mode } from './_store.js';
 
 const n = (x) => Math.round((Number(x) || 0) * 100) / 100;

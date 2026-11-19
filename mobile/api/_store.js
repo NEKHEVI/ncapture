@@ -1,6 +1,6 @@
 // Stockage partagé de la démo (téléphone -> ordinateur).
 // Ordre : Vercel Blob (BLOB_READ_WRITE_TOKEN), Upstash Redis REST (KV_REST_API_URL/TOKEN), sinon mémoire (non fiable).
-// RBooks démo — AGPL-3.0.
+// NCapture (NEKHEVI), démo NBooks, AGPL-3.0.
 const PREFIX = 'demo-factures/';
 const ACCESS = process.env.BLOB_ACCESS === 'public' ? 'public' : 'private';
 const KV_URL = process.env.KV_REST_API_URL || process.env.UPSTASH_REDIS_REST_URL;

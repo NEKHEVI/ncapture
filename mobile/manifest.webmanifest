@@ -1,1 +1,19 @@
-{"name":"RAWLF · RBooks Capture","short_name":"RBooks","start_url":"/capture","scope":"/","display":"standalone","background_color":"#F6F4EF","theme_color":"#F6F4EF","lang":"fr-CA","icons":[{"src":"/icon-192.png","sizes":"192x192","type":"image/png"},{"src":"/icon-512.png","sizes":"512x512","type":"image/png","purpose":"any maskable"}]}
+{
+  "name": "NCapture",
+  "short_name": "NCapture",
+  "description": "Photographiez vos factures : TPS et TVQ vérifiées, prêtes pour NBooks.",
+  "id": "/capture",
+  "start_url": "/capture",
+  "scope": "/",
+  "display": "standalone",
+  "orientation": "portrait",
+  "background_color": "#0B0B0C",
+  "theme_color": "#0B0B0C",
+  "lang": "fr-CA",
+  "categories": ["finance", "business", "productivity"],
+  "icons": [
+    { "src": "/icon-192.png", "sizes": "192x192", "type": "image/png", "purpose": "any" },
+    { "src": "/icon-512.png", "sizes": "512x512", "type": "image/png", "purpose": "any" },
+    { "src": "/icon-maskable-512.png", "sizes": "512x512", "type": "image/png", "purpose": "maskable" }
+  ]
+}

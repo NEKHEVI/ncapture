@@ -1,7 +1,7 @@
 // POST /api/lire — lit une photo de facture avec l'IA (Claude) et renvoie les champs.
 // Variables : ANTHROPIC_API_KEY (sinon mode démo), CAPTURE_CODE (code d'accès exigé si défini),
 // CAPTURE_DEMO=1 force le mode démo.
-// RBooks Capture — AGPL-3.0.
+// NCapture (NEKHEVI), AGPL-3.0.
 
 // La clé est nettoyée (espaces, retours de ligne, guillemets collés par erreur dans Vercel).
 const CLE = () => String(process.env.ANTHROPIC_API_KEY || '').trim().replace(/^["']+|["']+$/g, '');

@@ -3,43 +3,37 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1">
-<title>RAWLF · RBooks</title>
+<title>NBooks · démo</title>
 <meta name="robots" content="noindex">
-<link rel="icon" href="/favicon.png">
+<link rel="icon" href="/favicon.ico" sizes="48x48"><link rel="icon" href="/brand/nekhevi-symbole.svg" type="image/svg+xml">
 <link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Sora:wght@500;600&family=Manrope:wght@400;500;600;700&family=JetBrains+Mono:wght@500&display=swap">
-<script>try{var t=localStorage.getItem("rbooks-theme");if(t)document.documentElement.setAttribute("data-theme",t)}catch(e){}</script>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Geist:wght@400..700&family=Geist+Mono:wght@500&display=swap">
+<script>try{var t=localStorage.getItem("nk-mode");if(t)document.documentElement.setAttribute("data-theme",t)}catch(e){}</script>
 <style>
-/* RBooks (démo vendeur) — charte RAWLF « Gold Systems ». Basé sur Bigcapital, AGPL-3.0. */
-:root{--bg:#F6F4EF;--card:#FFFFFF;--raised:#FBFAF7;--border:#E6E1D7;--input:#DDD8CD;--divider:#EEEAE2;
---fg:#1A1814;--fg2:#4A463F;--muted:#6B665C;--faint:#77726A;--gold:#D9A441;--on-gold:#120E06;--gold-text:#8A6414;--gold-strong:#6E4F0E;
---brief:#FFF8EA;--brief-b:#E9D3A3;--nav:#F5EBD3;--nav-fg:#6E4F0E;--ok:#1F7A47;--ok-bg:#EAF6EF;--ok-b:#BFE0CC;
---red:#A3321F;--red-bg:#FCEDEA;--red-b:#EDC2B8;--ora:#9A5B0B;--ora-bg:#FDF3E4;--ora-b:#F0D2A6;--draft:#6E4F0E;--draft-bg:#FBF1DA;--draft-b:#E2C98B;--ring:#D9A441}
-:root[data-theme="dark"]{--bg:#0E0E0F;--card:#131211;--raised:#151413;--border:#22201C;--input:#262320;--divider:#1C1A17;
---fg:#EDE9E1;--fg2:#C9C3B7;--muted:#A8A193;--faint:#8F897D;--gold-text:#E2B654;--gold-strong:#F3CF7A;--brief:#14120E;--brief-b:#3A3022;--nav:#1A1813;--nav-fg:#F3CF7A;
---ok:#7FD3A0;--ok-bg:#0F1A13;--ok-b:#24412F;--red:#FF9C8A;--red-bg:#1F1210;--red-b:#5C2A22;--ora:#F2B56B;--ora-bg:#1E160C;--ora-b:#5A3F1C;--draft:#F3CF7A;--draft-bg:#1E190F;--draft-b:#5A4620}
-@media (prefers-color-scheme:dark){:root:not([data-theme="light"]){--bg:#0E0E0F;--card:#131211;--raised:#151413;--border:#22201C;--input:#262320;--divider:#1C1A17;
---fg:#EDE9E1;--fg2:#C9C3B7;--muted:#A8A193;--faint:#8F897D;--gold-text:#E2B654;--gold-strong:#F3CF7A;--brief:#14120E;--brief-b:#3A3022;--nav:#1A1813;--nav-fg:#F3CF7A;
---ok:#7FD3A0;--ok-bg:#0F1A13;--ok-b:#24412F;--red:#FF9C8A;--red-bg:#1F1210;--red-b:#5C2A22;--ora:#F2B56B;--ora-bg:#1E160C;--ora-b:#5A3F1C;--draft:#F3CF7A;--draft-bg:#1E190F;--draft-b:#5A4620}}
+/* NBooks (démo vendeur), style NEKHEVI. Basé sur Bigcapital, AGPL-3.0. */
+/* Palette NEKHEVI « Graphite et or » (même jetons que l'app NEKHEVI). */
+:root{--bg:#F5F4F1;--card:#FFFFFF;--raised:#FAF9F7;--border:#E2DFDA;--input:#D3CFC9;--divider:#EAE7E2;--fg:#111113;--fg2:#33312E;--muted:#57534D;--faint:#615C56;--gold:#BB8221;--on-gold:#141009;--gold-text:#82580C;--gold-strong:#6E4A08;--brief:#FAF9F7;--brief-b:#E2DFDA;--nav:#ECEAE6;--nav-fg:#111113;--ok:#12784A;--ok-bg:#E5F5EC;--ok-b:#A8DCC0;--red:#BE242B;--red-bg:#FDECEC;--red-b:#F2B8BA;--ora:#835600;--ora-bg:#FCF2DC;--ora-b:#EDCF8C;--draft:#82580C;--draft-bg:#FCF2DC;--draft-b:#EDCF8C;--ring:#4A4F57}
+:root[data-theme="dark"]{--bg:#0B0B0C;--card:#141416;--raised:#1A1A1D;--border:#26262A;--input:#2E2E33;--divider:#1E1E22;--fg:#F2F0EC;--fg2:#CFCBC4;--muted:#9C978F;--faint:#8C877F;--gold:#DEA543;--gold-text:#E6B45C;--gold-strong:#F1C777;--brief:#141416;--brief-b:#34343A;--nav:#1A1A1D;--nav-fg:#F2F0EC;--ok:#34C77B;--ok-bg:#0B2A1C;--ok-b:#17573A;--red:#F2555A;--red-bg:#2E1216;--red-b:#6E2A30;--ora:#F2B33D;--ora-bg:#2B2109;--ora-b:#6A5016;--draft:#E6B45C;--draft-bg:#2B2109;--draft-b:#6A5016;--ring:#C9CED6}
+@media (prefers-color-scheme:dark){:root:not([data-theme="light"]){--bg:#0B0B0C;--card:#141416;--raised:#1A1A1D;--border:#26262A;--input:#2E2E33;--divider:#1E1E22;--fg:#F2F0EC;--fg2:#CFCBC4;--muted:#9C978F;--faint:#8C877F;--gold:#DEA543;--gold-text:#E6B45C;--gold-strong:#F1C777;--brief:#141416;--brief-b:#34343A;--nav:#1A1A1D;--nav-fg:#F2F0EC;--ok:#34C77B;--ok-bg:#0B2A1C;--ok-b:#17573A;--red:#F2555A;--red-bg:#2E1216;--red-b:#6E2A30;--ora:#F2B33D;--ora-bg:#2B2109;--ora-b:#6A5016;--draft:#E6B45C;--draft-bg:#2B2109;--draft-b:#6A5016;--ring:#C9CED6}}
 
 *{box-sizing:border-box}
-html,body{margin:0;background:var(--bg);color:var(--fg);font:14px/1.5 Manrope,system-ui,sans-serif;-webkit-font-smoothing:antialiased}
+html,body{margin:0;background:var(--bg);color:var(--fg);font:14px/1.5 Geist,system-ui,sans-serif;-webkit-font-smoothing:antialiased}
 a{color:var(--gold-text)}
-h1,h2,h3{font-family:Sora,sans-serif;font-weight:600;margin:0;letter-spacing:-.01em}
+h1,h2,h3{font-family:Geist,sans-serif;font-weight:600;margin:0;letter-spacing:-.01em}
 h1{font-size:22px}h2{font-size:15px}h3{font-size:13px}
-.num,.mono{font-family:"JetBrains Mono",monospace;font-weight:500;font-variant-numeric:tabular-nums}
+.num,.mono{font-family:"Geist Mono",monospace;font-weight:500;font-variant-numeric:tabular-nums}
 .muted{color:var(--muted)}
 .mark{width:32px;height:32px;border-radius:8px;background:#0E0E0F;display:grid;place-items:center;flex:none}
 .mark img{width:22px;height:22px}
-.word{font:600 14px Sora,sans-serif;letter-spacing:.3em}
+.word{font:600 14px Geist,sans-serif;letter-spacing:.3em}
 .brand{display:flex;align-items:center;gap:10px}
-.brand small{display:block;font:500 11px Manrope;letter-spacing:.02em;color:var(--muted);margin-top:1px}
-.tag{display:inline-flex;align-items:center;gap:5px;font:600 11.5px Manrope;line-height:1.2;padding:3px 8px;border-radius:6px;border:1px solid var(--border);background:var(--raised);color:var(--fg2);white-space:nowrap}
+.brand small{display:block;font:500 11px Geist;letter-spacing:.02em;color:var(--muted);margin-top:1px}
+.tag{display:inline-flex;align-items:center;gap:5px;font:600 11.5px Geist;line-height:1.2;padding:3px 8px;border-radius:6px;border:1px solid var(--border);background:var(--raised);color:var(--fg2);white-space:nowrap}
 .tag.rouge{color:var(--red);background:var(--red-bg);border-color:var(--red-b)}
 .tag.orange{color:var(--ora);background:var(--ora-bg);border-color:var(--ora-b)}
 .tag.vert{color:var(--ok);background:var(--ok-bg);border-color:var(--ok-b)}
 .tag.draft{color:var(--draft);background:var(--draft-bg);border-color:var(--draft-b)}
-.btn{display:inline-flex;align-items:center;justify-content:center;gap:8px;height:38px;padding:0 14px;border-radius:10px;border:1px solid var(--input);background:var(--card);color:var(--fg);font:600 13.5px Manrope;cursor:pointer;text-decoration:none}
+.btn{display:inline-flex;align-items:center;justify-content:center;gap:8px;height:38px;padding:0 14px;border-radius:10px;border:1px solid var(--input);background:var(--card);color:var(--fg);font:600 13.5px Geist;cursor:pointer;text-decoration:none}
 .btn:hover{border-color:var(--gold)}
 .btn.gold{background:var(--gold);border-color:var(--gold);color:var(--on-gold)}
 .btn.gold:hover{filter:brightness(.97)}
@@ -51,32 +45,32 @@ h1{font-size:22px}h2{font-size:15px}h3{font-size:13px}
 .app{display:grid;grid-template-columns:236px 1fr;min-height:100vh}
 .side{background:var(--raised);border-right:1px solid var(--border);padding:16px 12px;display:flex;flex-direction:column;gap:14px;position:sticky;top:0;height:100vh}
 .org{padding:10px;border:1px solid var(--border);border-radius:10px;background:var(--card)}
-.org b{display:block;font:600 13px Manrope;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.org b{display:block;font:600 13px Geist;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
 .org span{font-size:11.5px;color:var(--muted)}
 .nav{display:flex;flex-direction:column;gap:2px}
-.nav .sec{font:600 10.5px Manrope;letter-spacing:.1em;text-transform:uppercase;color:var(--faint);padding:12px 10px 4px}
+.nav .sec{font:600 10.5px Geist;letter-spacing:.1em;text-transform:uppercase;color:var(--faint);padding:12px 10px 4px}
 .nav a{display:flex;align-items:center;gap:10px;padding:8px 10px;border-radius:8px;color:var(--fg2);text-decoration:none;font-weight:600;font-size:13.5px}
 .nav a svg{width:17px;height:17px;flex:none;opacity:.8}
 .nav a:hover{background:var(--card)}
 .nav a.on{background:var(--nav);color:var(--nav-fg)}
-.nav a .cnt{margin-left:auto;background:var(--gold);color:var(--on-gold);font:600 11px Manrope;border-radius:999px;padding:1px 7px}
+.nav a .cnt{margin-left:auto;background:var(--gold);color:var(--on-gold);font:600 11px Geist;border-radius:999px;padding:1px 7px}
 .side .foot{margin-top:auto;font-size:11px;color:var(--faint);padding:0 10px}
 .side .foot a{color:var(--faint)}
 .main{min-width:0}
 .top{height:60px;display:flex;align-items:center;gap:10px;padding:0 24px;border-bottom:1px solid var(--border);background:var(--card);position:sticky;top:0;z-index:5}
-.top .t{font:600 16px Sora;flex:1;min-width:0;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
-.live{display:inline-flex;align-items:center;gap:6px;font:500 11.5px "JetBrains Mono",monospace;color:var(--muted)}
+.top .t{font:600 16px Geist;flex:1;min-width:0;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.live{display:inline-flex;align-items:center;gap:6px;font:500 11.5px "Geist Mono",monospace;color:var(--muted)}
 .live i{width:7px;height:7px;border-radius:50%;background:var(--ok);box-shadow:0 0 0 3px var(--ok-bg)}
 .live.off i{background:var(--red);box-shadow:0 0 0 3px var(--red-bg)}
 .ico{width:38px;height:38px;border-radius:10px;border:1px solid var(--input);background:var(--card);color:var(--fg2);display:grid;place-items:center;cursor:pointer}
 .ico svg{width:17px;height:17px}
-.av{width:34px;height:34px;border-radius:50%;background:var(--nav);color:var(--nav-fg);display:grid;place-items:center;font:600 12px Sora;cursor:pointer;border:1px solid var(--brief-b)}
+.av{width:34px;height:34px;border-radius:50%;background:var(--nav);color:var(--nav-fg);display:grid;place-items:center;font:600 12px Geist;cursor:pointer;border:1px solid var(--brief-b)}
 .page{padding:24px;max-width:1240px}
 .head{display:flex;align-items:flex-end;justify-content:space-between;gap:16px;margin-bottom:18px;flex-wrap:wrap}
 .head p{margin:4px 0 0;color:var(--muted)}
 .kpis{display:grid;grid-template-columns:repeat(4,1fr);gap:14px;margin-bottom:16px}
 .kpi .l{font-size:12px;color:var(--muted);font-weight:600}
-.kpi .v{font:500 22px "JetBrains Mono",monospace;margin-top:6px;font-variant-numeric:tabular-nums}
+.kpi .v{font:500 22px "Geist Mono",monospace;margin-top:6px;font-variant-numeric:tabular-nums}
 .kpi .s{font-size:12px;color:var(--faint);margin-top:2px}
 .grid2{display:grid;grid-template-columns:1.6fr 1fr;gap:16px}
 .brief{background:var(--brief);border:1px solid var(--brief-b);border-radius:14px;padding:18px}
@@ -85,7 +79,7 @@ h1{font-size:22px}h2{font-size:15px}h3{font-size:13px}
 .qr .box img,.qr .box canvas{display:block}
 /* tableaux */
 table{width:100%;border-collapse:collapse}
-th{font:600 11px Manrope;letter-spacing:.06em;text-transform:uppercase;color:var(--muted);text-align:left;padding:10px 12px;border-bottom:1px solid var(--border);background:var(--raised);white-space:nowrap}
+th{font:600 11px Geist;letter-spacing:.06em;text-transform:uppercase;color:var(--muted);text-align:left;padding:10px 12px;border-bottom:1px solid var(--border);background:var(--raised);white-space:nowrap}
 td{padding:11px 12px;border-bottom:1px solid var(--divider);vertical-align:middle}
 tr.cl{cursor:pointer}tr.cl:hover td{background:var(--raised)}
 td.r,th.r{text-align:right}
@@ -110,7 +104,7 @@ tr.new td{animation:flash 6s ease-out}
 .drawer .dh{display:flex;align-items:center;gap:10px;padding:16px 20px;border-bottom:1px solid var(--border);position:sticky;top:0;background:var(--card)}
 .drawer .dh h2{flex:1}
 .drawer .db{padding:20px}
-.big{font:500 28px "JetBrains Mono",monospace;color:var(--gold-text)}
+.big{font:500 28px "Geist Mono",monospace;color:var(--gold-text)}
 .photo{width:100%;max-height:420px;object-fit:contain;background:var(--raised);border:1px solid var(--border);border-radius:10px}
 .kv{display:grid;grid-template-columns:150px 1fr;gap:6px 14px;margin:14px 0}
 .kv dt{color:var(--muted)}.kv dd{margin:0;font-weight:600}
@@ -119,8 +113,8 @@ tr.new td{animation:flash 6s ease-out}
 .login{position:fixed;inset:0;background:var(--bg);z-index:40;display:grid;place-items:center;padding:16px}
 .login .card{width:min(400px,100%);padding:28px}
 .login label{display:block;font-weight:600;font-size:13px;margin:14px 0 6px}
-input{width:100%;height:42px;border:1px solid var(--input);border-radius:10px;background:var(--card);color:var(--fg);font:500 14px Manrope;padding:0 12px}
-.toast{position:fixed;right:20px;bottom:20px;z-index:50;background:var(--fg);color:var(--bg);border-radius:12px;padding:12px 16px;font:600 13.5px Manrope;display:none;max-width:380px;box-shadow:0 6px 24px rgba(0,0,0,.18)}
+input{width:100%;height:42px;border:1px solid var(--input);border-radius:10px;background:var(--card);color:var(--fg);font:500 14px Geist;padding:0 12px}
+.toast{position:fixed;right:20px;bottom:20px;z-index:50;background:var(--fg);color:var(--bg);border-radius:12px;padding:12px 16px;font:600 13.5px Geist;display:none;max-width:380px;box-shadow:0 6px 24px rgba(0,0,0,.18)}
 .toast.on{display:block}
 .toast b{color:var(--gold)}
 @media (max-width:980px){.kpis{grid-template-columns:repeat(2,1fr)}.grid2{grid-template-columns:1fr}}
@@ -130,7 +124,7 @@ input{width:100%;height:42px;border:1px solid var(--input);border-radius:10px;ba
 <body>
 <div class="login" id="login">
   <form class="card" id="fLogin" autocomplete="on">
-    <div class="brand"><div class="mark"><img src="/logo.png" alt=""></div><div><div class="word">RAWLF</div><small>RBooks · comptabilité</small></div></div>
+    <div class="brand"><div class="mark"><img src="/brand/nekhevi-symbole.svg" alt=""></div><div><div class="word">NEKHEVI</div><small>NBooks · comptabilité</small></div></div>
     <h1 style="margin-top:22px">Connexion</h1>
     <p class="muted" style="margin:4px 0 0">Accédez à la comptabilité de votre entreprise.</p>
     <label for="lu">Courriel</label><input id="lu" autocomplete="username" required>
@@ -141,8 +135,8 @@ input{width:100%;height:42px;border:1px solid var(--input);border-radius:10px;ba
 </div>
 <div class="app">
   <aside class="side">
-    <div class="brand"><div class="mark"><img src="/logo.png" alt=""></div><div><div class="word">RAWLF</div><small>RBooks</small></div></div>
-    <div class="org"><b>Entreprise Démo RBooks inc.</b><span>Exercice 2026 · Québec</span></div>
+    <div class="brand"><div class="mark"><img src="/brand/nekhevi-symbole.svg" alt=""></div><div><div class="word">NEKHEVI</div><small>NBooks</small></div></div>
+    <div class="org"><b>Entreprise Démo inc.</b><span>Exercice 2026 · Québec</span></div>
     <nav class="nav" id="nav"></nav>
     <div class="foot">Basé sur Bigcapital · <a href="https://github.com/bigcapitalhq/bigcapital" target="_blank" rel="noopener">Code source</a></div>
   </aside>
@@ -171,7 +165,7 @@ var VENTES=[["FAC-0001","2026-11-02","Boulangerie Le Pétrin inc.","Consultation
 var SAISIES=[["FF-1001","2026-11-03","Bell Canada","5600 Télécommunications",89.95],["FF-1002","2026-11-05","Bureau en Gros","5400 Fournitures de bureau",64.20]].map(function(v){var t=taxes(v[4]);
  return{id:v[0],no:v[0],date:v[1],fournisseur:v[2],categorie:v[3],sous_total:v[4],tps:t.tps,tvq:t.tvq,pourboire:0,total:r2(v[4]+t.tps+t.tvq),no_tps:"123456789RT0001",no_tvq:"1234567890TQ0001",cti_rti:1,source:"Saisie",alertes:[]}});
 
-var CAP=[], vus={}, nouveaux={}, premier=true, view="accueil", CODEKEY="rbooks-capture-code", enLigne=true;
+var CAP=[], vus={}, nouveaux={}, premier=true, view="accueil", CODEKEY="ncapture-code", enLigne=true;
 function achats(){return CAP.concat(SAISIES)}
 function credits(f){var ok=f.no_tps&&f.no_tvq,k=f.cti_rti==null?1:f.cti_rti;return{cti:ok?r2(f.tps*k):0,rti:ok?r2(f.tvq*k):0}}
 function cout(f){var c=credits(f);return r2(f.sous_total+f.pourboire+(f.tps-c.cti)+(f.tvq-c.rti))}
@@ -213,7 +207,7 @@ function qr(){var el=$("qr");if(!el)return;el.innerHTML="";try{new QRCode(el,{te
 function depuis(iso){var s=(Date.now()-new Date(iso).getTime())/1000;if(!(s>=0))return"";if(s<60)return"à l'instant";if(s<3600)return"il y a "+Math.floor(s/60)+" min";return"le "+new Date(iso).toLocaleString("fr-CA",{day:"numeric",month:"short",hour:"2-digit",minute:"2-digit"})}
 
 function vVentes(){
-  return'<div class="head"><div><h1>Factures de vente</h1><p>TPS 5 % et TVQ 9,975 % calculées ligne par ligne.</p></div><button class="btn gold" onclick="toast(\'Démo : la création de facture se fait dans RBooks complet.\')">+ Nouvelle facture</button></div>'+
+  return'<div class="head"><div><h1>Factures de vente</h1><p>TPS 5 % et TVQ 9,975 % calculées ligne par ligne.</p></div><button class="btn gold" onclick="toast(\'Démo : la création de facture se fait dans NBooks complet.\')">+ Nouvelle facture</button></div>'+
   '<div class="tw"><table><thead><tr><th>Date</th><th>No</th><th>Client</th><th class="r">Sous-total</th><th class="r">TPS</th><th class="r">TVQ</th><th class="r">Total</th><th>Statut</th></tr></thead><tbody>'+
   VENTES.map(function(v){return'<tr><td class="num">'+dfr(v.date)+'</td><td class="num">'+v.no+'</td><td>'+esc(v.client)+'</td><td class="r num">'+money(v.sous_total)+'</td><td class="r num">'+money(v.tps)+'</td><td class="r num">'+money(v.tvq)+'</td><td class="r num"><b>'+money(v.total)+'</b></td><td>'+(v.statut==="Payée"?'<span class="tag vert">Payée</span>':'<span class="tag draft">Ouverte</span>')+'</td></tr>'}).join("")+'</tbody></table></div>';
 }
@@ -289,7 +283,7 @@ window.addEventListener("hashchange",function(){view=(location.hash||"#accueil")
 function sess(){try{return localStorage.getItem("rbooks-demo-session")}catch(e){return null}}
 $("fLogin").onsubmit=function(e){e.preventDefault();try{localStorage.setItem("rbooks-demo-session",$("lu").value.trim())}catch(x){};$("login").style.display="none";initiales()};
 $("av").onclick=function(){try{localStorage.removeItem("rbooks-demo-session")}catch(e){};$("login").style.display="grid"};
-function initiales(){var u=(sess()||"Démo RBooks").replace(/@.*/,"").split(/[.\s_-]+/);$("av").textContent=((u[0]||"D")[0]+((u[1]||u[0]||"R")[u[1]?0:1]||"R")).toUpperCase()}
+function initiales(){var u=(sess()||"Démo NBooks").replace(/@.*/,"").split(/[.\s_-]+/);$("av").textContent=((u[0]||"D")[0]+((u[1]||u[0]||"R")[u[1]?0:1]||"R")).toUpperCase()}
 if(sess()){$("login").style.display="none";initiales()}
 
 /* ---- thème ---- */
@@ -297,7 +291,7 @@ var SUN='<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width
     MOON='<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M20 14.5A8 8 0 019.5 4a8 8 0 1010.5 10.5z"/></svg>';
 function sombre(){var a=document.documentElement.getAttribute("data-theme");return a?a==="dark":matchMedia("(prefers-color-scheme: dark)").matches}
 function majTheme(){$("bTheme").innerHTML=sombre()?SUN:MOON}
-$("bTheme").onclick=function(){var t=sombre()?"light":"dark";document.documentElement.setAttribute("data-theme",t);try{localStorage.setItem("rbooks-theme",t)}catch(e){};majTheme()};
+$("bTheme").onclick=function(){var t=sombre()?"light":"dark";document.documentElement.setAttribute("data-theme",t);try{localStorage.setItem("nk-mode",t)}catch(e){};majTheme()};
 majTheme();
 
 view=(location.hash||"#accueil").slice(1); render(); charger(); setInterval(function(){if(!document.hidden)charger()},3000);

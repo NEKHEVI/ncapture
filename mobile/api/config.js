@@ -5,7 +5,8 @@ export default function handler(req, res) {
   res.status(200).json({
     mode: !process.env.ANTHROPIC_API_KEY || process.env.CAPTURE_DEMO === '1' ? 'demo' : 'ia',
     code: Boolean(process.env.CAPTURE_CODE),
-    rbooks: 'connecte',
+    nbooks: 'connecte',
+    rbooks: 'connecte', // ancien nom, garde pour compatibilite
     stockage: stockage(),
   });
 }

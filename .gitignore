@@ -1,0 +1,22 @@
+# Secrets : jamais dans le dépôt
+.env
+.env.*
+*.env
+env.local.txt
+secrets/
+*.key
+.vercel/
+
+# Outils et fichiers produits
+node_modules/
+__pycache__/
+*.pyc
+.pytest_cache/
+brand/fonts/
+outils/_camera/
+desktop/_tmp_capture/
+desktop/inbox/
+desktop/export/
+desktop/data/etat.json
+desktop/data/*.tmp
+*.log
