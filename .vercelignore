@@ -1,8 +1,8 @@
-# Vercel : seul le dossier mobile/ est publie.
-desktop/
-brand/
-outils/
-shared/
+# Vercel : seul le dossier mobile/ est publie (motifs ancres a la racine).
+/desktop
+/brand
+/outils
+/shared
 .env*
 **/.env*
 secrets/
