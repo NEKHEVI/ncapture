@@ -43,6 +43,7 @@ for (const vp of Object.keys(VPS)) {
     let lent = true;
     await page.route('**/api/lire', async (r) => { if (lent) await pause(4000); await r.continue(); });
     await page.goto(`${base}/capture?theme=${th}&mode=${mode}`);
+    await page.addStyleTag({ content: '.toast{display:none!important}' });
     await page.evaluate(() => document.fonts.ready); await pause(500);
     await page.screenshot({ path: `${OUT}/${nom}-1-accueil.png` });
     await page.click('#bCam'); await page.waitForFunction(() => { const v = document.querySelector('.vf video'); return v && v.videoWidth > 0; }, null, { timeout: 8000 }).catch(() => {});
