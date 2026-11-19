@@ -117,6 +117,20 @@ def corriger(doc_id: str, champs: dict = Body(...)):
     return {"ok": True}
 
 
+@app.post("/api/docs/{doc_id}/complete")
+async def completer(doc_id: str, file: UploadFile = File(...)):
+    """« Reprendre une photo pour compléter » : remplit seulement les champs vides."""
+    contenu = await file.read()
+    if len(contenu) > MAX_OCTETS:
+        return {"ok": False, "ajoutes": [], "message": "Fichier trop gros (25 Mo max)"}
+    if not contenu:
+        return {"ok": False, "ajoutes": [], "message": "Fichier vide"}
+    try:
+        return eng.completer(doc_id, file.filename or "photo.jpg", contenu)
+    except KeyError:
+        raise HTTPException(404)
+
+
 @app.post("/api/docs/{doc_id}/approve")
 def approuver(doc_id: str):
     try:

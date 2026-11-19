@@ -24,6 +24,19 @@ EMPLOYE = "Démo"
 STATUTS_EXPORT = ("A_VERIFIER", "APPROUVE", "ENVOYE")
 CHAMPS_CORRIGEABLES = ["marchand", "date", "no_tps", "no_tvq", "sous_total", "tps", "tvq",
                        "pourboire", "total", "no_facture"]
+CHAMPS_COMPLETABLES = CHAMPS_CORRIGEABLES + ["no_autorisation", "mode_paiement", "carte_4"]
+MONTANTS = ("sous_total", "tps", "tvq", "pourboire", "total")
+NOMS_CHAMPS = {"marchand": "fournisseur", "date": "date", "no_tps": "no TPS", "no_tvq": "no TVQ",
+               "sous_total": "sous-total", "tps": "TPS", "tvq": "TVQ", "pourboire": "pourboire", "total": "total",
+               "no_facture": "no de facture", "no_autorisation": "no d'autorisation",
+               "mode_paiement": "mode de paiement", "carte_4": "carte"}
+
+
+def _vide(k: str, v) -> bool:
+    """Champ absent : texte vide, ou montant absent ou à 0 (même règle que l'app mobile)."""
+    if k in MONTANTS:
+        return not dp.z(dp.D(v))
+    return v is None or str(v).strip() == ""
 
 
 class LectureImpossible(Exception):
@@ -218,6 +231,68 @@ class Engine:
                 (self.data / "marchands.json").write_text(
                     json.dumps(reg, ensure_ascii=False, indent=2), encoding="utf-8")
             self.sauver()
+
+    def completer(self, doc_id: str, nom: str, contenu: bytes) -> dict:
+        """2e photo de la même facture : remplit SEULEMENT les champs encore vides.
+
+        Même règle que l'app mobile : rien de ce qui a été lu ou saisi n'est remplacé ;
+        un montant est vide s'il est absent ou à 0 ; les articles sont ajoutés sans doublon ;
+        la photo est jointe à la facture (vignette) et les alertes sont recalculées.
+        """
+        with self.verrou:
+            d = self.doc(doc_id)
+            if d["statut"] not in ("A_VERIFIER", "NON_LU"):
+                return {"ok": False, "ajoutes": [], "message": "Facture déjà approuvée : rien n'est modifié"}
+            propre = re.sub(r"[^\w.\-() ]", "_", Path(nom).name)[:80] or "photo.jpg"
+            dossier = self.inbox / d["mois"]
+            dossier.mkdir(parents=True, exist_ok=True)
+            chemin = dossier / propre
+            if chemin.exists() and chemin.read_bytes() != contenu:
+                chemin = dossier / f"{uuid.uuid4().hex[:6]}_{propre}"
+            chemin.write_bytes(contenu)
+            sha = dp.sha256(chemin)
+            if any(p["sha"] == sha for p in d["parts"]):
+                return {"ok": False, "ajoutes": [], "message": "Cette photo est déjà jointe à la facture"}
+            part = {"fichier": str(chemin.relative_to(self.racine)).replace("\\", "/"), "sha": sha, "complement": True}
+            try:
+                img = dp.charger_image(chemin)
+            except Exception as e:
+                return {"ok": False, "ajoutes": [], "message": f"Image illisible ({type(e).__name__})"}
+            part["dhash"] = dp.dhash(img)
+            try:
+                nv, moteur = self._lire(img, sha)
+            except LectureImpossible as e:
+                return {"ok": False, "ajoutes": [], "message": str(e)}
+            if nv.get("est_recu") is False:
+                return {"ok": False, "ajoutes": [], "message": "Ce n'est pas un reçu"}
+            part["data"] = nv
+            data = d["data"] = d["data"] or {"est_recu": True, "fragment": "complet", "confiance": 1.0}
+            corr = d.setdefault("corrections", {})
+            ajoutes = []
+            for k in CHAMPS_COMPLETABLES:
+                val = nv.get(k)
+                if _vide(k, val):
+                    continue
+                actuel = corr[k] if k in corr else data.get(k)
+                if _vide(k, actuel):
+                    data[k] = val
+                    corr.pop(k, None)  # un champ vidé à la main est rempli par la 2e photo
+                    ajoutes.append(k)
+            arts = list(data.get("articles") or [])
+            for a in nv.get("articles") or []:
+                if a not in arts:
+                    arts.append(a)
+            if arts:
+                data["articles"] = arts
+            if ajoutes:
+                data["confiance"] = max(float(data.get("confiance") or 0), float(nv.get("confiance") or 0))
+            d["parts"].append(part)
+            if d["statut"] == "NON_LU":
+                d["statut"], d["message"], d["moteur"] = "A_VERIFIER", "", moteur
+            self.sauver()
+            return {"ok": True, "ajoutes": ajoutes,
+                    "message": ("Complétée : " + ", ".join(NOMS_CHAMPS.get(k, k) for k in ajoutes)) if ajoutes
+                    else "Rien de nouveau sur cette photo : saisissez à la main"}
 
     def rejeter(self, doc_id: str) -> None:
         with self.verrou:
