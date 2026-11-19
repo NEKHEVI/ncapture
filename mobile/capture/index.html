@@ -142,6 +142,7 @@ function vCapturer(){
   (enCours?'<div class="busy"><div class="spin"></div>'+enCours+' lecture'+(enCours>1?'s':'')+' en cours…</div>':"")+'</div><div>'+
   (nv?'<div class="card go" id="goV" role="button" tabindex="0"><div><div class="n">'+nv+' facture'+(nv>1?'s':'')+' à vérifier</div><div class="tx">Corrigez au besoin, puis approuvez.</div></div><span class="arr">'+I.arr+'</span></div>':"")+
   (pret?'<div class="card go" id="goA" role="button" tabindex="0"><div><div class="n">'+pret+' prête'+(pret>1?'s':'')+' pour NBooks</div><div class="tx">Approuvées, pas encore envoyées.</div></div><span class="arr">'+I.arr+'</span></div>':"")+
+  (peutInstaller()?'<button class="btn gold full" id="bInstall" style="margin:12px 0 14px">'+ICO_AJOUT+' Installer NCapture sur ce téléphone</button>':"")+
   '<div class="brief"><h3>Comment ça marche</h3><ol><li>Vous cadrez la facture et prenez la photo.</li><li>'+(CFG.mode==="ia"?"L’IA lit le fournisseur et les montants ; le code refait tous les calculs.":"Démo : vos photos ne sont pas lues (vous saisissez les montants) ; le bouton Exemples montre une lecture type.")+'</li><li>Vous corrigez au besoin, vous approuvez, puis NBooks crée la facture fournisseur.</li></ol></div>'+
   '</div></div>';
 }
@@ -177,7 +178,36 @@ function vExporter(){
 function vReglagesApp(){
   return '<div class="sec">Accès</div><div class="card"><div class="kv"><span>Lecture</span><b>'+(CFG.mode==="ia"?"IA (Claude)":"Démo, sans IA")+'</b></div>'+
   '<div class="kv"><span>Code d’accès</span><b>'+(CFG.code?(code()?"Enregistré":"Exigé"):"Non exigé")+'</b></div>'+
-  (CFG.code?'<div class="row"><button class="btn" id="bCode">'+(code()?"Changer le code":"Entrer le code")+'</button></div>':'')+'</div>';
+  (CFG.code?'<div class="row"><button class="btn" id="bCode">'+(code()?"Changer le code":"Entrer le code")+'</button></div>':'')+'</div>'+
+  '<div class="sec">Application</div><div class="card"><div class="kv"><span>Sur l’écran d’accueil</span><b>'+(estInstallee()?"Installée":"Pas encore")+'</b></div>'+
+  (estInstallee()?'':'<div class="row"><button class="btn" id="bInstall2">Installer NCapture</button></div>')+'</div>';
+}
+
+/* ---- installation sur l'écran d'accueil (app web installable) ---- */
+var installDiffere=null;
+function estInstallee(){try{return window.matchMedia("(display-mode: standalone)").matches||navigator.standalone===true}catch(e){return false}}
+function estIOS(){return /iphone|ipad|ipod/i.test(navigator.userAgent)||(navigator.platform==="MacIntel"&&navigator.maxTouchPoints>1)}
+function estAndroid(){return /android/i.test(navigator.userAgent)}
+function peutInstaller(){return !estInstallee()&&(!!installDiffere||estIOS()||estAndroid())}
+window.addEventListener("beforeinstallprompt",function(e){e.preventDefault();installDiffere=e;if(view==="capturer"||view==="reglages")render()});
+window.addEventListener("appinstalled",function(){installDiffere=null;toast("NCapture est installée : cherchez l’icône sur votre écran d’accueil");render()});
+var ICO_PARTAGE='<svg viewBox="0 0 24 24" width="22" height="22" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" style="vertical-align:-5px"><path d="M12 3v12M8 7l4-4 4 4"/><path d="M6 11H5v10h14V11h-1"/></svg>';
+var ICO_AJOUT='<svg viewBox="0 0 24 24" width="22" height="22" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" aria-hidden="true" style="vertical-align:-5px"><rect x="4" y="4" width="16" height="16" rx="4"/><path d="M12 8v8M8 12h8"/></svg>';
+function installer(){
+  if(installDiffere){var ev=installDiffere;installDiffere=null;ev.prompt();ev.userChoice.then(function(c){if(c&&c.outcome==="accepted")toast("Installation en cours…");render()}).catch(function(){render()});return}
+  var ios=estIOS(), pasSafari=ios&&/crios|fxios|edgios|opios/i.test(navigator.userAgent);
+  var etapes=ios
+    ?(pasSafari?'<li><span>Ouvrez <b>capture.nekhevi.com</b> dans <b>Safari</b> (l’installation se fait depuis Safari sur iPhone).</span></li>':'')+
+      '<li><span>Touchez le bouton <b>Partager</b> '+ICO_PARTAGE+' en bas de l’écran (en haut sur iPad).</span></li>'+
+      '<li><span>Faites défiler et touchez <b>Sur l’écran d’accueil</b> '+ICO_AJOUT+'.</span></li>'+
+      '<li><span>Touchez <b>Ajouter</b>. L’icône NCapture apparaît avec vos apps.</span></li>'
+    :'<li><span>Touchez le menu <b>⋮</b> en haut à droite de Chrome.</span></li>'+
+      '<li><span>Touchez <b>Installer l’application</b> (ou <b>Ajouter à l’écran d’accueil</b>).</span></li>'+
+      '<li><span>Confirmez. L’icône NCapture apparaît avec vos apps.</span></li>';
+  $("sheetIn").innerHTML='<div class="grab"></div><div class="form" style="grid-column:1/-1"><p class="eyebrow">Application</p><h1>Installer NCapture</h1>'+
+    '<p class="sub">Une icône sur votre écran d’accueil, ouverture en plein écran, comme une app. Rien à télécharger d’un magasin.</p>'+
+    '<div class="brief"><ol>'+etapes+'</ol></div></div><div class="acts"><button class="btn gold" id="bInsOk">Compris</button></div>';
+  $("sheet").classList.add("on"); $("bInsOk").onclick=fermer;
 }
 
 /* ---- fiche : lecture et correction au pouce ---- */
@@ -296,7 +326,7 @@ function bind(){
   var g=function(id,f){var e=$(id);if(e)e.onclick=f};
   g("bCam",prendre); g("bFiles",function(){$("files").click()});
   g("bDemo",function(){demo()}); g("goV",function(){view="verifier";render()}); g("goA",function(){view="approuvees";render()});
-  g("bSendAll",envoyer); g("bCsv",csv); g("bXlsx",xlsx); g("bCode",demanderCode);
+  g("bSendAll",envoyer); g("bCsv",csv); g("bXlsx",xlsx); g("bCode",demanderCode); g("bInstall",installer); g("bInstall2",installer);
   g("bVider",function(){if(confirmer())return;items=[];save();render()});
   document.querySelectorAll(".item[data-id]").forEach(function(e){e.onclick=function(){ouvrir(e.dataset.id)}});
   document.querySelectorAll(".go").forEach(function(e){e.onkeydown=function(k){if(k.key==="Enter"||k.key===" "){k.preventDefault();e.click()}}});
