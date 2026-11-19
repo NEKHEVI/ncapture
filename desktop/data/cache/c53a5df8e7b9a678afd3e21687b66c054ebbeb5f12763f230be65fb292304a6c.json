@@ -1,0 +1,30 @@
+{
+  "moteur": "claude (test — lu par Claude dans la session)",
+  "data": {
+    "est_recu": true,
+    "fragment": "complet",
+    "marchand": "Kinatex Sports Physio",
+    "adresse": "Rue Sherbrooke, Montréal, QC H2K 4L5",
+    "telephone": null,
+    "no_tps": null,
+    "no_tvq": null,
+    "date": "2025-11-27",
+    "heure": "08:57",
+    "devise": "CAD",
+    "articles": [],
+    "sous_total": null,
+    "tps": null,
+    "tvq": null,
+    "tvh": null,
+    "montant_avant_pourboire": null,
+    "pourboire": null,
+    "total": 80.0,
+    "mode_paiement": "debit",
+    "carte_4": "9805",
+    "no_autorisation": "100419",
+    "no_facture": "2",
+    "categorie_suggeree": "santé",
+    "confiance": 0.9,
+    "notes": "Bordereau de paiement Interac seulement (pas de facture détaillée). Date 11/27/25 = MM/JJ/AA."
+  }
+}

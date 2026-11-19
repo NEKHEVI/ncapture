@@ -1,0 +1,30 @@
+{
+  "moteur": "claude (test — lu par Claude dans la session)",
+  "data": {
+    "est_recu": true,
+    "fragment": "bas",
+    "marchand": "RONA Inc.",
+    "adresse": null,
+    "telephone": null,
+    "no_tps": "103039624RT0001",
+    "no_tvq": "1001939455TQ0001",
+    "date": "2026-06-12",
+    "heure": "17:40",
+    "devise": "CAD",
+    "articles": [],
+    "sous_total": null,
+    "tps": null,
+    "tvq": null,
+    "tvh": null,
+    "montant_avant_pourboire": null,
+    "pourboire": null,
+    "total": null,
+    "mode_paiement": "debit",
+    "carte_4": "9805",
+    "no_autorisation": "189658",
+    "no_facture": "5834-76020-83",
+    "categorie_suggeree": "matériel",
+    "confiance": 0.9,
+    "notes": "Bas du reçu seulement (total coupé). Date imprimée 06/12/26 lue MM/JJ/AA : le sondage expire le 22 juin 2026."
+  }
+}
