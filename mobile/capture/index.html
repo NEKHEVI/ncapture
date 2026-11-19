@@ -289,9 +289,11 @@ $("files").onchange=$("cam").onchange;
 $("nav").addEventListener("click",function(e){var b=e.target.closest("button");if(!b)return;view=b.dataset.v;render();window.scrollTo(0,0)});
 
 function demanderCode(){
-  $("sheetIn").innerHTML='<div class="grab"></div><div class="form" style="grid-column:1/-1"><p class="eyebrow">Accès</p><h1>Code d\'accès</h1><p class="sub">Entrez le code fourni par l\'équipe NEKHEVI.</p><label for="fc">Code</label><input id="fc" autocomplete="one-time-code"></div><div class="acts two"><button class="btn ghost" id="bcX">Annuler</button><button class="btn gold" id="bc">Continuer</button></div>';
+  $("sheetIn").innerHTML='<div class="grab"></div><div class="form" style="grid-column:1/-1"><p class="eyebrow">Accès</p><h1>Code d\'accès</h1><p class="sub">Entrez le code fourni par l\'équipe NEKHEVI.</p><label for="fc">Code</label><input id="fc" type="text" inputmode="text" autocomplete="off" autocapitalize="off" autocorrect="off" spellcheck="false" enterkeyhint="go"></div><div class="acts two"><button class="btn ghost" id="bcX">Annuler</button><button class="btn gold" id="bc">Continuer</button></div>';
   $("sheet").classList.add("on"); $("bcX").onclick=fermer;
   $("bc").onclick=function(){var v=$("fc").value.trim();if(v){try{localStorage.setItem(CODEKEY,v)}catch(e){}fermer();toast("Code enregistré");if(view==="reglages")render()}};
+  $("fc").addEventListener("keydown",function(e){if(e.key==="Enter"||e.keyCode===13){e.preventDefault();$("bc").click()}});
+  $("fc").addEventListener("focus",function(){setTimeout(function(){$("bc").scrollIntoView({block:"nearest"})},300)});
 }
 
 items.forEach(function(i){if(i.etat==="lecture")i.etat="erreur"});
