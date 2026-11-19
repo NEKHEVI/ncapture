@@ -77,3 +77,11 @@ def test_facture_fournisseur_avec_piece_jointe(tmp_path, monkeypatch):
     imputes = {e.get("costAccountId") for e in corps["entries"]} - {None}
     assert imputes <= {20, 21}
     assert ("POST", "/api/bills", "Bearer jeton-bidon") in JOURNAL
+
+
+def test_nbooks_url_prioritaire_sur_ancien_nom(monkeypatch):
+    """NBOOKS_URL est lu d'abord ; RBOOKS_URL reste un repli."""
+    monkeypatch.setenv("RBOOKS_URL", "http://ancien.test:3000/")
+    assert rbooks.url_base() == "http://ancien.test:3000"
+    monkeypatch.setenv("NBOOKS_URL", "http://nouveau.test:3000/")
+    assert rbooks.url_base() == "http://nouveau.test:3000"

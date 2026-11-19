@@ -1,4 +1,4 @@
-"""Client de l'API RBooks : facture fournisseur (Bill) + photo en pièce jointe.
+"""Client de l'API NBooks : facture fournisseur (Bill) + photo en pièce jointe.
 
 Routes (lues dans rbooks/packages/server/src/modules, lecture seule) :
   POST /auth/signin        {email, password}  -> {accessToken, organizationId, tenantId}
@@ -9,7 +9,7 @@ Routes (lues dans rbooks/packages/server/src/modules, lecture seule) :
   POST /bills              billDate, vendorId, entries[{itemId, rate, quantity}], attachments[{key}], open
 En-têtes : Authorization: Bearer <jwt> et organization-id: <id>.
 
-Identifiants : variables RBOOKS_EMAIL / RBOOKS_PASSWORD, sinon fichier
+Identifiants : variables NBOOKS_EMAIL / NBOOKS_PASSWORD (anciens noms RBOOKS_* lus en repli), sinon fichier
 C:\\DEV\\CODEGOD\\RAWLF\\secrets\\rbooks-demo.txt lu par programme. Jamais affichés ni journalisés.
 """
 from __future__ import annotations
@@ -23,8 +23,13 @@ import requests
 
 from . import taxes
 
-PRET = Path(os.environ.get("RBOOKS_PRET", r"C:\DEV\CODEGOD\RAWLF\_tmp_rbooks\SERVEUR-PRET.txt"))
-SECRETS = Path(os.environ.get("RBOOKS_SECRETS", r"C:\DEV\CODEGOD\RAWLF\secrets\rbooks-demo.txt"))
+def _env(nom: str) -> str | None:
+    """Variable NBOOKS_<nom>, sinon l'ancien nom RBOOKS_<nom> (repli)."""
+    return os.environ.get("NBOOKS_" + nom) or os.environ.get("RBOOKS_" + nom)
+
+
+PRET = Path(_env("PRET") or r"C:\DEV\CODEGOD\RAWLF\_tmp_rbooks\SERVEUR-PRET.txt")
+SECRETS = Path(_env("SECRETS") or r"C:\DEV\CODEGOD\RAWLF\secrets\rbooks-demo.txt")
 
 
 class RBooksErreur(Exception):
@@ -36,8 +41,8 @@ def serveur_pret() -> bool:
 
 
 def url_base() -> str:
-    if os.environ.get("RBOOKS_URL"):
-        return os.environ["RBOOKS_URL"].rstrip("/")
+    if _env("URL"):
+        return _env("URL").rstrip("/")
     if PRET.exists():
         m = re.search(r"https?://[^\s\"']+", PRET.read_text(encoding="utf-8", errors="ignore"))
         if m:
@@ -46,20 +51,20 @@ def url_base() -> str:
 
 
 def _identifiants() -> tuple[str, str]:
-    email, mdp = os.environ.get("RBOOKS_EMAIL"), os.environ.get("RBOOKS_PASSWORD")
+    email, mdp = _env("EMAIL"), _env("PASSWORD")
     if email and mdp:
         return email, mdp
     if not SECRETS.exists():
-        raise RBooksErreur("Identifiants RBooks introuvables (RBOOKS_EMAIL / RBOOKS_PASSWORD ou fichier secrets).")
+        raise RBooksErreur("Identifiants NBooks introuvables (NBOOKS_EMAIL / NBOOKS_PASSWORD ou fichier secrets).")
     lignes = [l.strip() for l in SECRETS.read_text(encoding="utf-8", errors="ignore").splitlines() if l.strip()]
     for l in lignes:
         k, sep, v = l.partition("=") if "=" in l else l.partition(":")
         if not sep:
             continue
         k, v = k.strip().lower().lstrip("#").strip(), v.strip().strip("\"'")
-        if k in ("email", "courriel", "user", "username", "rbooks_email", "login") and not email:
+        if k in ("email", "courriel", "user", "username", "rbooks_email", "nbooks_email", "login") and not email:
             email = v
-        elif k in ("password", "mot de passe", "motdepasse", "mdp", "pass", "rbooks_password") and not mdp:
+        elif k in ("password", "mot de passe", "motdepasse", "mdp", "pass", "rbooks_password", "nbooks_password") and not mdp:
             mdp = v
     if not (email and mdp):  # format 2 lignes : courriel puis mot de passe
         if len(lignes) >= 2 and "@" in lignes[0]:
@@ -93,7 +98,7 @@ def _id(rep) -> int:
                     return _id(rep[k])
                 except RBooksErreur:
                     pass
-    raise RBooksErreur("Réponse RBooks sans identifiant.")
+    raise RBooksErreur("Réponse NBooks sans identifiant.")
 
 
 class Client:
@@ -112,15 +117,15 @@ class Client:
             try:
                 r = self.s.request(methode, f"{self.base}{p}{chemin}", headers=self.h, timeout=60, **kw)
             except requests.RequestException as e:
-                raise RBooksErreur(f"Serveur RBooks injoignable ({type(e).__name__}) à {self.base}")
+                raise RBooksErreur(f"Serveur NBooks injoignable ({type(e).__name__}) à {self.base}")
             if r.status_code == 404 and self.prefixe is None and p == "/api":
                 derniere = r
                 continue
             self.prefixe = p
             if r.status_code >= 400:
-                raise RBooksErreur(f"RBooks {methode} {chemin} : HTTP {r.status_code} {_resume(r)}")
+                raise RBooksErreur(f"NBooks {methode} {chemin} : HTTP {r.status_code} {_resume(r)}")
             return r.json() if r.content else {}
-        raise RBooksErreur(f"RBooks : route introuvable {chemin} (HTTP {derniere.status_code if derniere else '?'})")
+        raise RBooksErreur(f"NBooks : route introuvable {chemin} (HTTP {derniere.status_code if derniere else '?'})")
 
     def connexion(self):
         email, mdp = _identifiants()
@@ -128,7 +133,7 @@ class Client:
         tok = rep.get("accessToken") or rep.get("access_token")
         org = rep.get("organizationId") or rep.get("organization_id")
         if not tok:
-            raise RBooksErreur("Connexion RBooks refusée.")
+            raise RBooksErreur("Connexion NBooks refusée.")
         self.h = {"Authorization": f"Bearer {tok}", "organization-id": str(org)}
 
     # --- ressources ---------------------------------------------------------
@@ -141,7 +146,7 @@ class Client:
                 self._cache[cle] = v["id"]
                 return v["id"]
         nos = " ".join(x for x in (f"No TPS : {no_tps}." if no_tps else "", f"No TVQ : {no_tvq}." if no_tvq else "") if x)
-        note = f"Créé par RBooks Capture. {nos}".strip()
+        note = f"Créé par NCapture. {nos}".strip()
         vid = _id(self._req("POST", "/vendors", json={"displayName": nom, "companyName": nom,
                                                       "currencyCode": "CAD", "active": True, "note": note}))
         self._cache[cle] = vid
@@ -177,7 +182,7 @@ class Client:
                 self._cache[cle] = i["id"]
                 return i["id"]
         corps = {"name": titre, "type": "service", "purchasable": True, "costPrice": 0, "sellable": False,
-                 "note": "Créé par RBooks Capture"}
+                 "note": "Créé par NCapture"}
         cid = self.compte_depense(code, nom)
         if cid:
             corps["costAccountId"] = cid
@@ -208,7 +213,7 @@ class Client:
             nom = str(c.get("name") or "")
             if sigle in nom.upper() and ("recevoir" in nom.lower() or "receivable" in nom.lower()):
                 return c["id"]
-        raise RBooksErreur(f"Compte « {sigle} à recevoir » introuvable dans RBooks (code {code}).")
+        raise RBooksErreur(f"Compte « {sigle} à recevoir » introuvable dans NBooks (code {code}).")
 
     def facture_fournisseur(self, r: dict, doc_id: str, photos: list[Path]) -> int:
         """Crée la facture fournisseur à partir d'un résultat évalué. Retourne l'id du Bill.

@@ -6,6 +6,7 @@ from pathlib import Path
 
 from fastapi import Body, FastAPI, File, HTTPException, UploadFile
 from fastapi.responses import FileResponse, HTMLResponse
+from fastapi.staticfiles import StaticFiles
 
 from . import exports, rbooks
 from .engine import RACINE, Engine, mode_lecture
@@ -14,18 +15,20 @@ PORT = int(os.environ.get("CAPTURE_PORT", "4100"))
 MAX_OCTETS = 25 * 1024 * 1024
 STATIC = Path(__file__).resolve().parent / "static"
 
-app = FastAPI(title="RBooks Capture", docs_url=None, redoc_url=None)
+app = FastAPI(title="NCapture", docs_url=None, redoc_url=None)
+# Habillage commun NCapture (copié depuis shared/ par outils/synchroniser.ps1) et icônes.
+app.mount("/assets", StaticFiles(directory=STATIC / "assets"), name="assets")
 eng = Engine()
 
 
 def _envoyer(doc_id: str) -> str | None:
-    """Crée la facture fournisseur dans RBooks. Retourne un message d'erreur ou None."""
+    """Crée la facture fournisseur dans NBooks. Retourne un message d'erreur ou None."""
     with eng.verrou:
         d = eng.doc(doc_id)
         if d["statut"] not in ("APPROUVE",):
             return "Facture non approuvée"
         if not rbooks.serveur_pret():
-            d["erreur_envoi"] = "Serveur RBooks pas prêt (SERVEUR-PRET.txt absent). Envoi en attente."
+            d["erreur_envoi"] = "Serveur NBooks pas prêt (SERVEUR-PRET.txt absent). Envoi en attente."
             eng.sauver()
             return d["erreur_envoi"]
         r = eng.evaluer_tous()[doc_id]
@@ -57,9 +60,20 @@ def accueil():
     return (STATIC / "index.html").read_text(encoding="utf-8")
 
 
+@app.get("/favicon.ico", include_in_schema=False)
+def favicon():
+    return FileResponse(STATIC / "assets" / "favicon.ico")
+
+
+@app.get("/manifest.webmanifest", include_in_schema=False)
+def manifeste():
+    return FileResponse(STATIC / "assets" / "manifest.webmanifest", media_type="application/manifest+json")
+
+
 @app.get("/api/status")
 def status():
-    return {"mode": mode_lecture(), "rbooks_pret": rbooks.serveur_pret(), "rbooks_url": rbooks.url_base(),
+    pret, url = rbooks.serveur_pret(), rbooks.url_base()
+    return {"mode": mode_lecture(), "nbooks_pret": pret, "nbooks_url": url, "rbooks_pret": pret, "rbooks_url": url,
             "categories": [{"code": c["code"], "nom": c["nom"]} for c in eng.cats]}
 
 

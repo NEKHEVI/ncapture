@@ -1,0 +1,9 @@
+# Vercel : seul le dossier mobile/ est publie.
+desktop/
+brand/
+outils/
+shared/
+.env*
+**/.env*
+secrets/
+*.log

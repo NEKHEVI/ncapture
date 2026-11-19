@@ -25,7 +25,7 @@ COLONNES = [
     ("mode_paiement", "mode_paiement", False), ("no_facture", "no_facture", False),
     ("moteur", "moteur", False), ("alertes", "alertes", False), ("fichiers", "fichiers", False),
 ]
-STATUT_LIBELLE = {"A_VERIFIER": "A_VERIFIER", "APPROUVE": "APPROUVE", "ENVOYE": "ENVOYE_RBOOKS"}
+STATUT_LIBELLE = {"A_VERIFIER": "A_VERIFIER", "APPROUVE": "APPROUVE", "ENVOYE": "ENVOYE_NBOOKS"}
 
 
 def lignes(eng: Engine) -> list[dict]:
