@@ -1,1 +1,1 @@
-{"name":"ncapture-mobile","private":true,"type":"module","license":"AGPL-3.0-only","dependencies":{"@vercel/blob":"2.9.0"}}
+{"name":"ncapture-mobile","private":true,"type":"module","license":"AGPL-3.0-only","scripts":{"test":"node --test tests/isolation.test.mjs","test:lecture":"node --test tests/lecture.test.mjs"},"dependencies":{"@supabase/supabase-js":"2.117.2","@vercel/blob":"2.9.0"}}

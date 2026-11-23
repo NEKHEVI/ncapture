@@ -19,14 +19,44 @@
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,600..800&family=Geist+Mono:wght@400;500&family=Geist:wght@300..700&family=Instrument+Serif:ital@0;1&display=swap">
 <link rel="stylesheet" href="/ncapture.css">
+<style>
+/* Entreprise active (multi-clients) */
+.orgchip{display:inline-flex;align-items:center;gap:8px;max-width:46vw;height:34px;padding:0 12px;border-radius:999px;border:1px solid var(--org,var(--nk-accent));background:color-mix(in oklab,var(--org,var(--nk-accent)) 12%,transparent);color:var(--nk-fg);font:600 13px/1 var(--nk-font-sans,system-ui);cursor:default;white-space:nowrap}
+.orgchip[hidden]{display:none}
+.orgchip[data-sel="1"]{cursor:pointer}
+.orgchip i{width:10px;height:10px;border-radius:50%;background:var(--org,var(--nk-accent));flex:none}
+.orgchip span{overflow:hidden;text-overflow:ellipsis}
+.orgchip svg{width:14px;height:14px;flex:none;opacity:.7}
+.orglist{display:grid;gap:10px;margin:14px 0 4px}
+.orglist button{display:flex;align-items:center;gap:12px;width:100%;min-height:56px;padding:12px 16px;border-radius:14px;border:1px solid var(--nk-border);background:var(--nk-surface,transparent);color:var(--nk-fg);font:600 15px/1.2 var(--nk-font-sans,system-ui);text-align:left;cursor:pointer}
+.orglist button[aria-current="true"]{border-color:var(--org);box-shadow:0 0 0 2px color-mix(in oklab,var(--org) 35%,transparent)}
+.orglist button i{width:14px;height:14px;border-radius:50%;background:var(--org);flex:none}
+.orglist button small{display:block;font-weight:400;color:var(--nk-fg-muted);margin-top:3px}
+.porte{max-width:460px;margin:8vh auto 0;text-align:center}
+.porte img{width:72px;height:72px}
+.porte .btn{margin-top:18px}
+.porte .code6{font:500 28px/1 var(--nk-font-mono,monospace);letter-spacing:.3em;text-align:center}
+body.sans-nav nav#nav{display:none}
+/* Fiche : 5 montants, un par ligne ; champs incertains surlignés (la personne confirme) */
+.figs.lignes{grid-template-columns:1fr;gap:6px}
+.figs.lignes .fig{display:flex;align-items:center;justify-content:space-between;gap:12px;padding:6px 12px}
+.figs.lignes .fig label{flex:1 1 auto}
+.figs.lignes .fig input{flex:0 0 46%;text-align:right;min-height:40px}
+.figs.lignes .fig.total input{font-size:28px}
+.fig.doute,.doute input,input.doute{background:color-mix(in oklab,#f5b301 16%,var(--nk-surface,transparent));border-color:#d99a00}
+.fig.doute label::after,label.doute::after{content:" · à confirmer";color:#b07a00;font-weight:600;font-size:12px}
+.tag.qbo{border-color:#2ca01c;color:#2ca01c}
+@media (max-width:520px){.top .mod,.top .sep{display:none}.orgchip{max-width:52vw}body.avec-org .top .logo b,body.avec-org .top #mode{display:none}}
+</style>
 </head>
 <body>
 <div class="splash" id="splash" aria-hidden="true"><div class="b"><img src="/brand/ncapture-marque-fond-sombre.svg" alt=""><b><i>N</i>Capture</b><div class="bar"></div></div></div>
 <header class="top">
   <a class="logo" href="/capture" aria-label="NCapture, accueil"><img class="lg-d" src="/brand/ncapture-marque-fond-sombre.svg" alt=""><img class="lg-l" src="/brand/ncapture-marque-fond-clair.svg" alt=""><b><i>N</i>Capture</b></a>
   <span class="sep"></span><span class="mod">NEKHEVI</span><span class="sp"></span>
+  <button type="button" class="orgchip" id="org" hidden aria-label="Entreprise active"></button>
   <span class="tag draft" id="mode">…</span>
-  <a class="lnk" href="/nbooks" target="nbooks" aria-label="Ouvrir NBooks">NBooks<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M14 5h5v5M19 5l-8 8M18 14v5H5V6h5"/></svg></a>
+  <a class="lnk" id="lNbooks" href="/nbooks" target="nbooks" aria-label="Ouvrir NBooks">NBooks<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M14 5h5v5M19 5l-8 8M18 14v5H5V6h5"/></svg></a>
 </header>
 <main id="view"></main>
 <nav id="nav" aria-label="Sections">
@@ -43,15 +73,31 @@
 
 <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
 <script src="/ncapture-ui.js"></script>
+<script src="/ncapture-regles.js"></script>
 <script>
 (function(){
 "use strict";
 var $=function(id){return document.getElementById(id)};
 var KEY="ncapture-v1", CODEKEY="ncapture-code";
 var CFG={mode:"demo",code:false}, CATS=[], view="capturer", n=0, ouvertId=null;
-function load(){try{return JSON.parse(localStorage.getItem(KEY)||localStorage.getItem("rbooks-capture-v1"))||[]}catch(e){return[]}}
-function save(){try{localStorage.setItem(KEY,JSON.stringify(items))}catch(e){toast("Mémoire du téléphone pleine : exportez et videz la liste.")}}
-var items=load();
+/* Multi-clients : SRV = données dans l'espace NEKHEVI de l'entreprise (serveur) ; sinon repli local (ancien code). */
+var SRV=false, ORG=null, ORGS=[], MOI=null, SEL=false, ORGKEY="ncapture-org", synchro={}, porteOuverte=false;
+/* Destination des factures approuvées, par entreprise (ncapture_org_settings) : NBooks ou QuickBooks. */
+var REG={destination:"nbooks",envoi_direct:false,modifiable:false};
+function qbo(){return REG.destination==="quickbooks"}
+function nomDest(){return qbo()?"QuickBooks":"NBooks"}
+function H(){var h={"Content-Type":"application/json","x-ncapture":"1"};if(SRV&&ORG)h["x-ncapture-org"]=ORG.id;var c=code();if(!SRV&&c)h["x-capture-code"]=c;return h}
+function snap(i){return JSON.stringify({r:i.r,cat:i.cat,cti:i.cti,alertes:i.alertes,etat:i.etat})}
+function load(){if(SRV)return[];try{return JSON.parse(localStorage.getItem(KEY)||localStorage.getItem("rbooks-capture-v1"))||[]}catch(e){return[]}}
+function save(){
+  if(!SRV){try{localStorage.setItem(KEY,JSON.stringify(items))}catch(e){toast("Mémoire du téléphone pleine : exportez et videz la liste.")}return}
+  items.forEach(function(i){ if(!i.srv||i.etat==="lecture") return; var s=snap(i); if(synchro[i.id]===s) return; synchro[i.id]=s;
+    fetch("/api/documents?id="+encodeURIComponent(i.id),{method:"PATCH",headers:H(),body:JSON.stringify({r:i.r,categorie:i.cat||"",cti_rti:i.cti==null?1:i.cti,alertes:i.alertes||[],etat:i.etat==="erreur"?"verifier":i.etat,mode:i.mode||"",modele:i.modele||""})})
+      .then(function(x){if(x.status===401)return sessionPerdue();if(!x.ok){delete synchro[i.id];toast("Enregistrement non fait, réessayez")}})
+      .catch(function(){delete synchro[i.id];toast("Hors ligne : modification non enregistrée")});
+  });
+}
+var items=[];
 var esc=function(s){return String(s==null?"":s).replace(/[&<>"']/g,function(c){return{"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c]})};
 var cents=function(x){return Math.round((Number(x)||0)*100)};
 var money=function(x){return (Number(x)||0).toLocaleString("fr-CA",{style:"currency",currency:"CAD"})};
@@ -66,24 +112,15 @@ function categorie(r){
   if(!best||!four.trim()) return {code:"5900",nom:"À classer",cti_rti:1,doute:true};
   return {code:best.code,nom:best.nom,cti_rti:best.cti_rti,doute:parArt||/^À classer/.test(best.nom)};
 }
-function verifier(r){
-  var a=[], sub=cents(r.sous_total), tps=cents(r.tps), tvq=cents(r.tvq), pb=cents(r.pourboire), tot=cents(r.total);
-  if(Math.abs(sub+tps+tvq+pb-tot)>3) a.push("Le total ne balance pas ("+money((sub+tps+tvq+pb)/100)+" calculé)");
-  if(sub>0 && tps>0 && Math.abs(tps-Math.round(sub*0.05))>2) a.push("TPS différente de 5 %");
-  if(sub>0 && tvq>0 && Math.abs(tvq-Math.round(sub*0.09975))>2) a.push("TVQ différente de 9,975 %");
-  if((tps>0||tvq>0) && (!r.no_tps||!r.no_tvq)) a.push("Pas de nos de taxe : CTI/RTI non réclamables");
-  if(sub>0 && pb>sub*0.25) a.push("Pourboire de plus de 25 %");
-  if(!r.date) a.push("Date illisible");
-  if((Number(r.confiance)||1)<0.8) a.push("Lecture incertaine");
-  return a;
-}
+/* Règles partagées (ncapture-regles.js) : balance, TPS 5 %, TVQ 9,975 %, pourboire, champs à confirmer.
+   Les numéros de taxe sont facultatifs : aucune alerte s'ils manquent. */
+function verifier(r){return NCR.verifier(r)}
 function enrichir(it){
   var c=categorie(it.r); it.cat=it.catManuelle||(c.code+" "+c.nom); it.cti=it.catManuelle?ctiDe(it.catManuelle):c.cti_rti;
   it.alertes=verifier(it.r);
   if(it.cti<1) it.alertes.push("Repas : 50 % des CTI/RTI");
   if(c.doute&&!it.catManuelle) it.alertes.push("Catégorie à confirmer");
   if(it.mode==="non-lu") it.alertes.unshift("Photo non lue (mode démo) : saisissez le fournisseur et les montants");
-  else if((Number(it.r.confiance)||0)<0.8) it.alertes.push("Lecture incertaine : comparez avec la photo");
   return it;
 }
 function ctiDe(cat){var c=CATS.find(function(x){return (x.code+" "+x.nom)===cat});return c?c.cti_rti:1}
@@ -99,32 +136,44 @@ function lire(file,idx){
   var id=Date.now().toString(36)+Math.random().toString(36).slice(2,6);
   var it={id:id,etat:"lecture",ajout:new Date().toISOString(),thumb:"",r:{},alertes:[]};
   items.unshift(it); n++; render();
+  var grand="", orgLecture=ORG&&ORG.id;
   return Promise.all([reduire(file,1600,.82),reduire(file,360,.7)]).then(function(v){
-    it.thumb=v[1]; render();
-    var h={"Content-Type":"application/json"}, c=code(); if(c) h["x-capture-code"]=c;
-    return fetch("/api/lire",{method:"POST",headers:h,body:JSON.stringify(idx==null?{image:v[0]}:{image:v[0],index:idx,demo:true})});
+    it.thumb=v[1]; grand=v[0]; render();
+    return fetch("/api/lire",{method:"POST",headers:H(),body:JSON.stringify(idx==null?{image:v[0]}:{image:v[0],index:idx,demo:true})});
   }).then(function(r){
-    if(r.status===401){try{localStorage.removeItem(CODEKEY)}catch(e){}throw new Error("code")}
+    if(r.status===401){if(SRV)throw new Error("session");try{localStorage.removeItem(CODEKEY)}catch(e){}throw new Error("code")}
+    if(r.status===402) throw new Error("budget");
     if(!r.ok) throw new Error("lecture");
     return r.json();
   }).then(function(j){
     it.mode=j.mode; it.modele=j.modele; it.r=j.resultat||{}; it.etat="verifier"; it.neuf=true; enrichir(it);
-    save(); render(); if(ouvertId===it.id) ouvrir(it.id); toast(it.alertes.length?"Lue : "+it.alertes.length+" point(s) à vérifier":"Lue et vérifiée");
+    if(!SRV){save(); render(); if(ouvertId===it.id) ouvrir(it.id); return}
+    if(!ORG||ORG.id!==orgLecture){items=items.filter(function(x){return x!==it});render();return}
+    // Enregistrée dans l'espace de l'entreprise (table + photo privée), puis l'id du serveur remplace l'id local.
+    var s0=snap(it);
+    return fetch("/api/documents",{method:"POST",headers:H(),body:JSON.stringify({cle:it.id,r:it.r,mode:it.mode,modele:it.modele,categorie:it.cat,cti_rti:it.cti,alertes:it.alertes,image:grand,thumb:it.thumb})})
+      .then(function(x){if(x.status===401)throw new Error("session");if(!x.ok)throw new Error("enregistrement");return x.json()})
+      .then(function(d){var ancien=it.id;it.id=d.document.id;it.srv=true;it.ajout=d.document.ajout;synchro[it.id]=s0;if(ouvertId===ancien)ouvertId=it.id;save();render();if(ouvertId===it.id)ouvrir(it.id)});
+  }).then(function(){
+    if(it.etat==="verifier") toast(it.alertes.length?"Lue : "+it.alertes.length+" point(s) à vérifier":"Lue et vérifiée");
   }).catch(function(e){
     it.etat="erreur"; save(); render();
-    toast(e.message==="code"?"Code d'accès requis":"Lecture impossible, réessayez");
+    toast(e.message==="code"?"Code d'accès requis":e.message==="session"?"Session expirée : reconnectez-vous":e.message==="budget"?"Budget IA du mois atteint pour cette entreprise":e.message==="enregistrement"?"Lue, mais pas enregistrée : réessayez":"Lecture impossible, réessayez");
     if(e.message==="code") demanderCode();
+    if(e.message==="session") sessionPerdue();
   });
 }
 
 /* ---- vues ---- */
 function render(){
+  if(porteOuverte) return;
   document.querySelectorAll("nav button").forEach(function(b){b.classList.toggle("on",b.dataset.v===view);if(b.dataset.v===view)b.setAttribute("aria-current","page");else b.removeAttribute("aria-current")});
   var nv=items.filter(function(i){return i.etat==="verifier"}).length, bv=$("bv"); bv.hidden=!nv; bv.textContent=nv;
   var v=$("view");
   if(view==="capturer") v.innerHTML=vCapturer();
   if(view==="verifier") v.innerHTML=vListe("verifier","À vérifier","Touchez une facture pour corriger les montants, puis approuvez-la.");
-  if(view==="approuvees") v.innerHTML=vListe("approuvee","Approuvées","Prêtes pour NBooks. Elles apparaissent aussitôt sur la page NBooks de l’ordinateur.");
+  if(view==="approuvees") v.innerHTML=vListe("approuvee","Approuvées",qbo()?"Prêtes pour QuickBooks. Exportez-les en CSV, puis importez le fichier dans QuickBooks Online (Factures fournisseurs).":"Prêtes pour NBooks. Elles apparaissent aussitôt sur la page NBooks de l’ordinateur.");
+  var ln=$("lNbooks"); if(ln) ln.style.display=qbo()?"none":"";
   if(view==="exporter") v.innerHTML=vExporter();
   if(view==="reglages") v.innerHTML=NC.vueReglages({extra:vReglagesApp(),version:"Version mobile.",licence:"/LICENSE.txt"});
   bind();
@@ -132,8 +181,8 @@ function render(){
 }
 function vCapturer(){
   var enCours=items.filter(function(i){return i.etat==="lecture"}).length, nv=items.filter(function(i){return i.etat==="verifier"}).length, I=NC.icones;
-  var pret=items.filter(function(i){return i.etat==="approuvee"&&!i.envoye}).length;
-  return '<p class="eyebrow">Entreprise Démo inc.</p><h1>Capture de factures</h1><p class="sub">Photographiez vos factures et vos reçus : NCapture lit le fournisseur et les montants, vérifie la TPS et la TVQ, et prépare tout pour NBooks.</p>'+
+  var pret=items.filter(function(i){return i.etat==="approuvee"&&!(qbo()?i.exporte:i.envoye)}).length;
+  return '<p class="eyebrow">'+esc(ORG?ORG.nom:"Entreprise Démo inc.")+'</p><h1>Capture de factures</h1><p class="sub">Photographiez vos factures et vos reçus : NCapture lit le fournisseur et les montants, vérifie la TPS et la TVQ, et prépare tout pour '+nomDest()+'.</p>'+
   '<div class="home"><div>'+
   '<div class="shoot"><div class="frame corners" aria-hidden="true"></div>'+
   '<button class="shutter" id="bCam" aria-label="Prendre une photo de facture"><span>'+I.cam+'</span></button>'+
@@ -141,16 +190,16 @@ function vCapturer(){
   '<div class="row" style="margin-top:0"><button class="btn" id="bFiles">'+I.img+'Galerie</button><button class="btn" id="bDemo">Exemples</button></div>'+
   (enCours?'<div class="busy"><div class="spin"></div>'+enCours+' lecture'+(enCours>1?'s':'')+' en cours…</div>':"")+'</div><div>'+
   (nv?'<div class="card go" id="goV" role="button" tabindex="0"><div><div class="n">'+nv+' facture'+(nv>1?'s':'')+' à vérifier</div><div class="tx">Corrigez au besoin, puis approuvez.</div></div><span class="arr">'+I.arr+'</span></div>':"")+
-  (pret?'<div class="card go" id="goA" role="button" tabindex="0"><div><div class="n">'+pret+' prête'+(pret>1?'s':'')+' pour NBooks</div><div class="tx">Approuvées, pas encore envoyées.</div></div><span class="arr">'+I.arr+'</span></div>':"")+
+  (pret?'<div class="card go" id="goA" role="button" tabindex="0"><div><div class="n">'+pret+' prête'+(pret>1?'s':'')+' pour '+nomDest()+'</div><div class="tx">Approuvées, pas encore '+(qbo()?'exportées':'envoyées')+'.</div></div><span class="arr">'+I.arr+'</span></div>':"")+
   (peutInstaller()?'<button class="btn gold full" id="bInstall" style="margin:12px 0 14px">'+ICO_AJOUT+' Installer NCapture sur ce téléphone</button>':"")+
-  '<div class="brief"><h3>Comment ça marche</h3><ol><li>Vous cadrez la facture et prenez la photo.</li><li>'+(CFG.mode==="ia"?"L’IA lit le fournisseur et les montants ; le code refait tous les calculs.":"Démo : vos photos ne sont pas lues (vous saisissez les montants) ; le bouton Exemples montre une lecture type.")+'</li><li>Vous corrigez au besoin, vous approuvez, puis NBooks crée la facture fournisseur.</li></ol></div>'+
+  '<div class="brief"><h3>Comment ça marche</h3><ol><li>Vous cadrez la facture et prenez la photo.</li><li>'+(CFG.mode==="ia"?"L’IA lit le fournisseur et les montants ; le code refait tous les calculs.":"Démo : vos photos ne sont pas lues (vous saisissez les montants) ; le bouton Exemples montre une lecture type.")+'</li><li>'+(qbo()?"Vous corrigez au besoin, vous approuvez, puis vous exportez le fichier pour QuickBooks Online.":"Vous corrigez au besoin, vous approuvez, puis NBooks crée la facture fournisseur.")+'</li></ol></div>'+
   '</div></div>';
 }
 function ton(a){return /balance|illisible|impossible/i.test(a)?"rouge":"orange"}
 function carte(i){
   var r=i.r||{}, al=i.alertes||[], tags="", lec=i.etat==="lecture";
   if(i.etat==="verifier"||i.etat==="erreur") tags+=al.length?al.map(function(a){return '<span class="tag '+ton(a)+'">'+esc(a)+'</span>'}).join(""):'<span class="tag vert">Vérifiée</span>';
-  if(i.etat==="approuvee") tags+=i.envoye?'<span class="tag draft">'+esc(i.envoye)+'</span>':'<span class="tag vert">Approuvée</span>';
+  if(i.etat==="approuvee") tags+=i.envoye?'<span class="tag draft">'+esc(i.envoye)+'</span>':i.exporte?'<span class="tag qbo">Exportée pour QuickBooks · '+esc(String(i.exporte).slice(0,10))+'</span>':'<span class="tag vert">Approuvée</span>';
   if(i.cat) tags+='<span class="tag">'+esc(i.cat)+'</span>';
   return '<div class="card item'+(lec?' lecture':'')+(i.neuf?' lit':'')+'" data-id="'+i.id+'"><div class="ph'+(lec?' scan':'')+'">'+(i.thumb?'<img src="'+i.thumb+'" alt="">':'')+'</div>'+
   '<div><div class="n">'+esc(r.fournisseur||(i.etat==="erreur"?"Lecture impossible":lec?"Lecture en cours…":"Fournisseur à saisir"))+'</div>'+
@@ -162,7 +211,10 @@ function carte(i){
 function vListe(etat,titre,sous){
   var l=items.filter(function(i){return i.etat===etat||(etat==="verifier"&&(i.etat==="erreur"||i.etat==="lecture"))});
   var head='<p class="eyebrow">'+(etat==="verifier"?"File d’approbation":"Prêtes pour la comptabilité")+'</p><h1>'+titre+'</h1><p class="sub">'+sous+'</p>';
-  if(etat==="approuvee"&&l.length){var ne=l.filter(function(i){return !i.envoye}).length;head+=ne?'<button class="btn gold full" id="bSendAll" style="margin-bottom:14px">Envoyer '+ne+' facture'+(ne>1?'s':'')+' à NBooks</button>':'<div class="brief" style="text-align:center;font-weight:600">Tout est envoyé à NBooks.</div>';}
+  if(etat==="approuvee"&&l.length&&qbo()){var nx=l.filter(function(i){return !i.exporte}).length;
+    head+='<button class="btn gold full" id="bQbo" style="margin-bottom:8px">'+(nx?'Exporter '+nx+' facture'+(nx>1?'s':'')+' pour QuickBooks (CSV)':'Exporter de nouveau pour QuickBooks (CSV)')+'</button>'+
+      (REG.envoi_direct?'<button class="btn full" id="bQboApi" style="margin-bottom:14px">Envoyer directement à QuickBooks</button>':'<p class="note" style="margin:0 0 14px">Dans QuickBooks Online : Paramètres, Importer des données, Factures fournisseurs. Le pourboire et les taxes arrivent sur des lignes séparées.</p>');}
+  else if(etat==="approuvee"&&l.length){var ne=l.filter(function(i){return !i.envoye}).length;head+=ne?'<button class="btn gold full" id="bSendAll" style="margin-bottom:14px">Envoyer '+ne+' facture'+(ne>1?'s':'')+' à NBooks</button>':'<div class="brief" style="text-align:center;font-weight:600">Tout est envoyé à NBooks.</div>';}
   return head+(l.length?'<div class="list">'+l.map(carte).join("")+'</div>':'<div class="empty">Rien ici pour l\'instant.</div>');
 }
 function totaux(l){var t={n:l.length,sub:0,tps:0,tvq:0,pb:0,tot:0};l.forEach(function(i){var r=i.r;t.sub+=cents(r.sous_total);t.tps+=cents(r.tps);t.tvq+=cents(r.tvq);t.pb+=cents(r.pourboire);t.tot+=cents(r.total)});return t}
@@ -171,11 +223,23 @@ function vExporter(){
   var cti=lignes().reduce(function(s,o){return s+cents(o["CTI réclamable"])+cents(o["RTI réclamable"])},0);
   return '<p class="eyebrow">Comptabilité</p><h1>Exporter</h1><p class="sub">Les factures approuvées, prêtes pour la comptabilité.</p>'+
   '<div class="kpis"><div class="kpi hero"><small>Total approuvé</small><b>'+money(t.tot/100)+'</b></div><div class="kpi"><small>Factures</small><b>'+t.n+'</b></div><div class="kpi"><small>CTI + RTI</small><b>'+money(cti/100)+'</b></div><div class="kpi"><small>TPS</small><b>'+money(t.tps/100)+'</b></div><div class="kpi"><small>TVQ</small><b>'+money(t.tvq/100)+'</b></div></div>'+
-  '<div class="row"><button class="btn gold" id="bXlsx"'+(t.n?"":" disabled")+'>Excel (.xlsx)</button><button class="btn" id="bCsv"'+(t.n?"":" disabled")+'>CSV</button></div>'+
-  '<div class="row"><button class="btn ghost" id="bVider">Vider la liste</button></div>'+
+  '<div class="row"><button class="btn'+(qbo()?' gold':'')+'" id="bQbo"'+(t.n?"":" disabled")+'>QuickBooks Online (CSV)</button></div>'+
+  '<div class="row"><button class="btn'+(qbo()?'':' gold')+'" id="bXlsx"'+(t.n?"":" disabled")+'>Excel (.xlsx)</button><button class="btn" id="bCsv"'+(t.n?"":" disabled")+'>CSV</button></div>'+
+  '<div class="row"><button class="btn ghost" id="bVider">'+(SRV?(qbo()?"Archiver les factures exportées pour QuickBooks":"Archiver les factures envoyées à NBooks"):"Vider la liste")+'</button></div>'+
+  '<p class="note">Le fichier QuickBooks suit le format d’import des factures fournisseurs de QuickBooks Online : une ligne par montant, pourboire sur sa propre ligne (hors taxes), TPS et TVQ dans le montant de taxe et détaillées dans le mémo.</p>'+
+  (SRV?'<p class="note">Vos factures sont gardées dans l’espace sécurisé de '+esc(ORG?ORG.nom:"votre entreprise")+', visibles seulement par ses membres. Archiver les retire de cette liste sans les effacer.</p>':'')+
   '<p class="note">L\'Excel contient une feuille par mois et une feuille TPS/TVQ (CTI et RTI réclamables, repas à 50 %).</p>';
 }
 function vReglagesApp(){
+  if(SRV) return '<div class="sec">Compte</div><div class="card"><div class="kv"><span>Connecté</span><b>'+esc(MOI&&MOI.courriel||"")+'</b></div>'+
+  '<div class="kv"><span>Entreprise</span><b>'+esc(ORG?ORG.nom:"")+'</b></div>'+
+  '<div class="kv"><span>Lecture</span><b>'+(CFG.mode==="ia"?"IA (Claude)":"Démo, sans IA")+'</b></div>'+
+  '<div class="row">'+(SEL?'<button class="btn" id="bOrg2">Changer d’entreprise</button>':'')+'<button class="btn ghost" id="bSortie">Se déconnecter</button></div></div>'+
+  '<div class="sec">Comptabilité</div><div class="card"><div class="kv"><span>Les factures approuvées vont dans</span><b>'+nomDest()+'</b></div>'+
+  (REG.modifiable?'<div class="row"><button class="btn'+(qbo()?' gold':'')+'" id="bDestQ">QuickBooks</button><button class="btn'+(qbo()?'':' gold')+'" id="bDestN">NBooks</button></div>':'<p class="note" style="margin:6px 0 0">Seuls le propriétaire et les administrateurs changent ce réglage.</p>')+
+  (qbo()?'<p class="note" style="margin:6px 0 0">Export CSV pour QuickBooks Online. Envoi direct : '+(REG.envoi_direct?"activé":"pas encore activé")+'.</p>':'')+'</div>'+
+  '<div class="sec">Application</div><div class="card"><div class="kv"><span>Sur l’écran d’accueil</span><b>'+(estInstallee()?"Installée":"Pas encore")+'</b></div>'+
+  (estInstallee()?'':'<div class="row"><button class="btn" id="bInstall2">Installer NCapture</button></div>')+'</div>';
   return '<div class="sec">Accès</div><div class="card"><div class="kv"><span>Lecture</span><b>'+(CFG.mode==="ia"?"IA (Claude)":"Démo, sans IA")+'</b></div>'+
   '<div class="kv"><span>Code d’accès</span><b>'+(CFG.code?(code()?"Enregistré":"Exigé"):"Non exigé")+'</b></div>'+
   (CFG.code?'<div class="row"><button class="btn" id="bCode">'+(code()?"Changer le code":"Entrer le code")+'</button></div>':'')+'</div>'+
@@ -212,7 +276,7 @@ function installer(){
 
 /* ---- fiche : lecture et correction au pouce ---- */
 var MONT=["sous_total","tps","tvq","pourboire","total"], TXT=["fournisseur","date","numero","no_tps","no_tvq"];
-var NOMS={sous_total:"Sous-total",tps:"TPS 5 %",tvq:"TVQ 9,975 %",pourboire:"Pourboire",total:"Total"};
+var NOMS={sous_total:"Sous-total",tps:"TPS 5 %",tvq:"TVQ 9,975 %",pourboire:"Pourboire",total:"Total payé"};
 var vNum=function(x){return x==null||x===""?"":String(Number(x).toFixed(2)).replace(".",",")};
 var pNum=function(s){return Number(String(s).replace(/\s/g,"").replace(",","."))||0};
 function ouvrir(id){
@@ -220,19 +284,20 @@ function ouvrir(id){
   var r=i.r||{}, lec=i.etat==="lecture"; ouvertId=id;
   var opts=CATS.map(function(c){var v=c.code+" "+c.nom;return '<option'+(v===i.cat?' selected':'')+'>'+esc(v)+'</option>'}).join("");
   if(i.cat&&!CATS.some(function(c){return (c.code+" "+c.nom)===i.cat})) opts='<option selected>'+esc(i.cat)+'</option>'+opts;
-  var t=function(k,l,im){return '<div><label for="f_'+k+'">'+l+'</label><input id="f_'+k+'" inputmode="'+(im||"text")+'" autocomplete="off" value="'+esc(r[k]==null?"":r[k])+'"></div>'};
-  var f=function(k){return '<div class="fig'+(k==="total"?' total':'')+'" id="g_'+k+'"><label for="f_'+k+'">'+NOMS[k]+'</label><input id="f_'+k+'" inputmode="decimal" autocomplete="off" enterkeyhint="next" value="'+vNum(r[k])+'" placeholder="0,00"></div>'};
+  var inc=NCR.incertains(r), dt=function(k){return inc.indexOf(k)>=0};
+  var t=function(k,l,im){return '<div><label for="f_'+k+'"'+(dt(k)?' class="doute"':'')+'>'+l+'</label><input id="f_'+k+'"'+(dt(k)?' class="doute"':'')+' inputmode="'+(im||"text")+'" autocomplete="off" value="'+esc(r[k]==null?"":r[k])+'"></div>'};
+  var f=function(k){return '<div class="fig'+(k==="total"?' total':'')+(dt(k)?' doute':'')+'" id="g_'+k+'"><label for="f_'+k+'">'+NOMS[k]+'</label><input id="f_'+k+'" inputmode="decimal" autocomplete="off" enterkeyhint="next" value="'+vNum(r[k])+'" placeholder="0,00"></div>'};
   $("sheetIn").innerHTML='<div class="grab"></div>'+
   '<div class="side"><div class="ph-big'+(lec?' scan':'')+'">'+(i.thumb?'<img src="'+i.thumb+'" alt="Photo de la facture">':'')+'</div><div class="tags" id="fTags" style="margin:0 0 4px"></div>'+
   ((i.photos&&i.photos.length)?'<div class="tags" style="margin:4px 0">'+i.photos.map(function(p,k){return '<img src="'+p+'" alt="Photo '+(k+2)+'" style="height:56px;width:auto;border-radius:8px;border:1px solid var(--nk-border)">'}).join("")+'</div>':'')+
   (!lec&&i.etat!=="approuvee"?'<div style="margin:6px 0 4px"><button type="button" class="btn" id="bRe" style="width:100%">Reprendre une photo pour compléter</button><p class="note" style="margin:6px 0 0">Il manque une date, un montant ou un numéro ? Photographiez la partie manquante : seuls les champs vides sont remplis, rien de ce que vous avez saisi n’est remplacé.</p><input type="file" id="fRe" accept="image/*" capture="environment" hidden></div>':'')+
   '</div>'+
   '<div class="form"><p class="eyebrow" style="margin:6px 0 0">'+(lec?"Lecture en cours…":i.etat==="approuvee"?"Approuvée":"Vérifiez la lecture")+'</p>'+
-  '<div class="who"><label for="f_fournisseur" class="sr">Fournisseur</label><input id="f_fournisseur" autocomplete="off" placeholder="Fournisseur" value="'+esc(r.fournisseur||"")+'"></div>'+
+  '<div class="who'+(dt("fournisseur")?' doute':'')+'"><label for="f_fournisseur" class="sr">Fournisseur</label><input id="f_fournisseur" autocomplete="off" placeholder="Fournisseur" value="'+esc(r.fournisseur||"")+'">'+(dt("fournisseur")?'<p class="note" style="margin:2px 0 0;color:#b07a00">Fournisseur lu en partie : à confirmer</p>':'')+'</div>'+
   '<div class="g2">'+t("date","Date (AAAA-MM-JJ)")+t("numero","No de facture")+'</div>'+
-  '<div class="figs">'+MONT.map(f).join("")+'</div><p class="note" id="fCalc" style="margin:-4px 0 6px"></p>'+
+  '<div class="figs lignes">'+MONT.map(f).join("")+'</div><p class="note" id="fCalc" style="margin:-2px 0 6px"></p>'+
   '<label for="f_cat">Catégorie</label><select id="f_cat">'+opts+'</select>'+
-  '<details class="plus"'+((r.no_tps||r.no_tvq)?'':' open')+'><summary>Numéros de taxe (CTI / RTI)</summary><div class="g2">'+t("no_tps","No TPS")+t("no_tvq","No TVQ")+'</div></details></div>'+
+  '<details class="plus"><summary>Numéros de taxe du fournisseur (facultatif)</summary><div class="g2">'+t("no_tps","No TPS")+t("no_tvq","No TVQ")+'</div></details></div>'+
   '<div class="acts"><button class="btn ghost danger" id="bRej" aria-label="Rejeter la facture">Rejeter</button><button class="btn" id="bSave">Enregistrer</button>'+(i.etat!=="approuvee"?'<button class="btn gold" id="bOk">Approuver</button>':'<button class="btn" id="bFerm">Fermer</button>')+'</div>';
   $("sheet").classList.add("on");
   var lireForm=function(){TXT.forEach(function(k){r[k]=$("f_"+k).value.trim()});MONT.forEach(function(k){r[k]=pNum($("f_"+k).value)});i.r=r;
@@ -246,14 +311,21 @@ function ouvrir(id){
   };
   if(lec){$("sheetIn").querySelectorAll("input,select,#bSave,#bOk").forEach(function(e){e.disabled=true});$("bRej").onclick=fermer;$("bRej").textContent="Fermer";return}
   maj();
+  // Un champ touché par la personne est confirmé : il n'est plus surligné.
+  TXT.concat(MONT).forEach(function(k){var e=$("f_"+k);if(!e)return;e.addEventListener("input",function(){
+    if(Array.isArray(r.champs_incertains)){r.champs_incertains=r.champs_incertains.filter(function(x){return x!==k})}
+    e.classList.remove("doute");var g=$("g_"+k);if(g)g.classList.remove("doute");var l=document.querySelector('label[for="f_'+k+'"]');if(l)l.classList.remove("doute");
+    if(k==="fournisseur"){var w=e.closest(".who");if(w){w.classList.remove("doute");var p=w.querySelector(".note");if(p)p.remove()}}})});
   $("sheetIn").querySelectorAll("input,select").forEach(function(e){e.addEventListener("input",maj);e.addEventListener("change",maj)});
   MONT.forEach(function(k){$("f_"+k).addEventListener("focus",function(){this.select()})});
   $("bSave").onclick=function(){lireForm();save();fermer();render();toast(i.alertes.length?i.alertes.length+" point(s) restant(s)":"Montants vérifiés")};
-  if($("bOk")) $("bOk").onclick=function(){lireForm();i.etat="approuvee";save();fermer();render();toast("Approuvée : prête pour NBooks")};
+  if($("bOk")) $("bOk").onclick=function(){lireForm();i.etat="approuvee";save();fermer();render();toast("Approuvée : prête pour "+nomDest())};
   if($("bFerm")) $("bFerm").onclick=fermer;
   if($("bRe")){ $("bRe").onclick=function(){$("fRe").click()};
     $("fRe").onchange=function(){var fl=this.files&&this.files[0]; this.value=""; if(!fl) return; lireForm(); save(); completer(id,fl)}; }
-  $("bRej").onclick=function(){var b=$("bRej");if(!b.dataset.c){b.dataset.c=1;b.textContent="Confirmer";return}items=items.filter(function(x){return x.id!==id});save();fermer();render();toast("Facture retirée")};
+  $("bRej").onclick=function(){var b=$("bRej");if(!b.dataset.c){b.dataset.c=1;b.textContent="Confirmer";return}
+    if(SRV&&i.srv){i.etat="rejetee";save()}
+    items=items.filter(function(x){return x.id!==id});if(!SRV)save();fermer();render();toast("Facture retirée")};
 }
 function fermer(){$("sheet").classList.remove("on");ouvertId=null}
 /* 2e photo de la même facture : remplit seulement les champs encore vides */
@@ -262,12 +334,13 @@ function completer(id,file){
   var i=items.find(function(x){return x.id===id}); if(!i) return;
   var ph=document.querySelector("#sheetIn .ph-big"); if(ph) ph.classList.add("scan");
   var b=$("bRe"); if(b){b.disabled=true;b.textContent="Lecture de la 2e photo…"}
+  var deux=null;
   Promise.all([reduire(file,1600,.82),reduire(file,360,.7)]).then(function(v){
-    i.photos=(i.photos||[]).concat([v[1]]);
-    var h={"Content-Type":"application/json"}, c=code(); if(c) h["x-capture-code"]=c;
-    return fetch("/api/lire",{method:"POST",headers:h,body:JSON.stringify({image:v[0]})});
+    i.photos=(i.photos||[]).concat([v[1]]); deux=v;
+    return fetch("/api/lire",{method:"POST",headers:H(),body:JSON.stringify({image:v[0]})});
   }).then(function(r){
-    if(r.status===401){try{localStorage.removeItem(CODEKEY)}catch(e){}throw new Error("code")}
+    if(r.status===401){if(SRV)throw new Error("session");try{localStorage.removeItem(CODEKEY)}catch(e){}throw new Error("code")}
+    if(r.status===402) throw new Error("budget");
     if(!r.ok) throw new Error("lecture");
     return r.json();
   }).then(function(j){
@@ -278,11 +351,14 @@ function completer(id,file){
     var arts=(r.articles||[]).slice(); (nv.articles||[]).forEach(function(a){if(arts.indexOf(a)<0)arts.push(a)}); r.articles=arts;
     if(ajout.length) r.confiance=Math.max(Number(r.confiance)||0,Number(nv.confiance)||0);
     i.r=r; i.mode="ia"; if(j.modele) i.modele=j.modele; enrichir(i); save(); render(); if(ouvertId===id) ouvrir(id);
+    // La 2e photo rejoint la facture dans l'espace privé de l'entreprise.
+    if(SRV&&i.srv&&deux) fetch("/api/documents?id="+encodeURIComponent(id),{method:"PATCH",headers:H(),body:JSON.stringify({image:deux[0],thumb:deux[1]})}).catch(function(){});
     toast(ajout.length?"Complétée : "+ajout.join(", "):"Rien de nouveau sur cette photo : saisissez à la main");
   }).catch(function(e){
     save(); if(ouvertId===id) ouvrir(id);
-    toast(e.message==="code"?"Code d'accès requis":e.message==="demo"?"Mode démo : photo non lue":"Lecture impossible, réessayez");
+    toast(e.message==="code"?"Code d'accès requis":e.message==="session"?"Session expirée : reconnectez-vous":e.message==="budget"?"Budget IA du mois atteint pour cette entreprise":e.message==="demo"?"Mode démo : photo non lue":"Lecture impossible, réessayez");
     if(e.message==="code") demanderCode();
+    if(e.message==="session") sessionPerdue();
   });
 }
 $("sheet").addEventListener("click",function(e){if(e.target.id==="sheet")fermer()});
@@ -292,14 +368,16 @@ function envoyer(){
   var l=items.filter(function(i){return i.etat==="approuvee"&&!i.envoye});
   if(!l.length) return toast("Tout est déjà envoyé");
   toast("Envoi à NBooks…");
-  var h={"Content-Type":"application/json"}, c=code(); if(c) h["x-capture-code"]=c;
+  var h=H();
   var ok=0, ko=0;
   l.reduce(function(p,i){return p.then(function(){var r=i.r||{};
-    return fetch("/api/factures",{method:"POST",headers:h,body:JSON.stringify({cle:i.id,fournisseur:r.fournisseur,date:r.date,numero:r.numero,no_tps:r.no_tps,no_tvq:r.no_tvq,
-      sous_total:r.sous_total,tps:r.tps,tvq:r.tvq,pourboire:r.pourboire,total:r.total,categorie:i.cat,cti_rti:i.cti==null?1:i.cti,alertes:i.alertes,thumb:i.thumb})})
-    .then(function(x){if(x.status===401){try{localStorage.removeItem(CODEKEY)}catch(e){}throw new Error("code")}if(!x.ok)throw new Error("envoi");return x.json()})
+    var corps=SRV?{id:i.id}:{cle:i.id,fournisseur:r.fournisseur,date:r.date,numero:r.numero,no_tps:r.no_tps,no_tvq:r.no_tvq,
+      sous_total:r.sous_total,tps:r.tps,tvq:r.tvq,pourboire:r.pourboire,total:r.total,categorie:i.cat,cti_rti:i.cti==null?1:i.cti,alertes:i.alertes,thumb:i.thumb};
+    if(SRV&&!i.srv){ko++;return}
+    return fetch("/api/factures",{method:"POST",headers:h,body:JSON.stringify(corps)})
+    .then(function(x){if(x.status===401){if(SRV)throw new Error("session");try{localStorage.removeItem(CODEKEY)}catch(e){}throw new Error("code")}if(!x.ok)throw new Error("envoi");return x.json()})
     .then(function(j){i.envoye="Dans NBooks · "+((j.facture&&j.facture.no)||"");i.envoiNo=j.facture&&j.facture.no;ok++;save();render()})
-    .catch(function(e){ko++;if(e.message==="code")demanderCode()})})},Promise.resolve())
+    .catch(function(e){ko++;if(e.message==="code")demanderCode();if(e.message==="session")sessionPerdue()})})},Promise.resolve())
   .then(function(){toast(ko?(ok+" envoyée(s), "+ko+" en erreur : réessayez"):(ok+" facture"+(ok>1?"s":"")+" dans NBooks"))});
 }
 
@@ -308,6 +386,30 @@ function lignes(){
   return items.filter(function(i){return i.etat==="approuvee"}).map(function(i){var r=i.r,cti=i.cti==null?1:i.cti,ok=r.no_tps&&r.no_tvq;
     return {"Date":r.date||"","Fournisseur":r.fournisseur||"","No facture":r.numero||"","Catégorie":i.cat||"","Sous-total":+(r.sous_total||0),"TPS":+(r.tps||0),"TVQ":+(r.tvq||0),"Pourboire":+(r.pourboire||0),"Total":+(r.total||0),
       "CTI réclamable":ok?Math.round((r.tps||0)*cti*100)/100:0,"RTI réclamable":ok?Math.round((r.tvq||0)*cti*100)/100:0,"No TPS":r.no_tps||"","No TVQ":r.no_tvq||"","Alertes":(i.alertes||[]).join(" | ")}});
+}
+/* QuickBooks Online : CSV d'import des factures fournisseurs (ncapture-regles.js). Les factures exportées sont horodatées. */
+function csvQbo(){
+  var a=items.filter(function(i){return i.etat==="approuvee"}); if(!a.length) return toast("Aucune facture approuvée");
+  var l=a.filter(function(i){return !i.exporte}); if(!l.length) l=a;
+  var j=new Date().toISOString().slice(0,10);
+  telecharger("ncapture-quickbooks-"+j+".csv",new Blob([NCR.csvQuickBooks(l)],{type:"text/csv;charset=utf-8"}));
+  if(!SRV){l.forEach(function(i){i.exporte=new Date().toISOString()});save();render();return toast(l.length+" facture"+(l.length>1?"s":"")+" exportée"+(l.length>1?"s":""))}
+  Promise.all(l.filter(function(i){return i.srv}).map(function(i){return api("/api/documents?id="+encodeURIComponent(i.id),{method:"PATCH",body:JSON.stringify({exporte:true})})
+    .then(function(x){if(x.status===401){sessionPerdue();throw 0}if(!x.ok)throw 0;return x.json()}).then(function(d){i.exporte=d.document.exporte})}))
+  .then(function(){render();toast(l.length+" facture"+(l.length>1?"s":"")+" exportée"+(l.length>1?"s":"")+" pour QuickBooks")})
+  .catch(function(){render();toast("Fichier créé, mais le suivi de l’export n’est pas enregistré : réessayez")});
+}
+function envoyerQboApi(){
+  var l=items.filter(function(i){return i.etat==="approuvee"&&i.srv&&!i.exporte});if(!l.length)return toast("Rien à envoyer");
+  api("/api/quickbooks",{method:"POST",body:JSON.stringify({id:l[0].id})}).then(function(x){toast(x.status===503?"Envoi direct pas encore activé : utilisez l’export CSV":x.status===501?"Connecteur QuickBooks pas encore relié : utilisez l’export CSV":x.ok?"Envoyée":"Envoi impossible")});
+}
+function chargerReglages(){var org=ORG&&ORG.id;REG={destination:"nbooks",envoi_direct:false,modifiable:false};
+  if(!SRV||!ORG) return Promise.resolve();
+  return api("/api/reglages").then(function(r){return r.ok?r.json():null}).then(function(j){if(j&&ORG&&ORG.id===org){REG=j;render()}}).catch(function(){});
+}
+function changerDest(d){
+  api("/api/reglages",{method:"PATCH",body:JSON.stringify({destination:d})}).then(function(r){if(!r.ok)throw 0;return r.json()})
+  .then(function(j){REG.destination=j.destination;REG.envoi_direct=j.envoi_direct;render();toast("Destination : "+nomDest())}).catch(function(){toast("Réglage non changé")});
 }
 function telecharger(nom,blob){var a=document.createElement("a");a.href=URL.createObjectURL(blob);a.download=nom;document.body.appendChild(a);a.click();a.remove();setTimeout(function(){URL.revokeObjectURL(a.href)},4000)}
 function csv(){var L=lignes();if(!L.length)return;var h=Object.keys(L[0]),q=function(v){v=String(v);return /[";\n]/.test(v)?'"'+v.replace(/"/g,'""')+'"':v};
@@ -326,13 +428,18 @@ function bind(){
   var g=function(id,f){var e=$(id);if(e)e.onclick=f};
   g("bCam",prendre); g("bFiles",function(){$("files").click()});
   g("bDemo",function(){demo()}); g("goV",function(){view="verifier";render()}); g("goA",function(){view="approuvees";render()});
-  g("bSendAll",envoyer); g("bCsv",csv); g("bXlsx",xlsx); g("bCode",demanderCode); g("bInstall",installer); g("bInstall2",installer);
-  g("bVider",function(){if(confirmer())return;items=[];save();render()});
+  g("bSendAll",envoyer); g("bCsv",csv); g("bXlsx",xlsx); g("bQbo",csvQbo); g("bQboApi",envoyerQboApi);
+  g("bDestQ",function(){if(!qbo())changerDest("quickbooks")}); g("bDestN",function(){if(qbo())changerDest("nbooks")}); g("bCode",demanderCode); g("bInstall",installer); g("bInstall2",installer);
+  g("bVider",function(){if(confirmer())return;
+    if(SRV){var a=items.filter(function(i){return i.srv&&i.etat==="approuvee"&&(qbo()?i.exporte:i.envoye)});a.forEach(function(i){i.etat="archivee"});save();
+      items=items.filter(function(i){return i.etat!=="archivee"});render();toast(a.length?a.length+" facture"+(a.length>1?"s":"")+" archivée"+(a.length>1?"s":""):"Aucune facture envoyée à archiver");return}
+    items=[];save();render()});
+  g("bSortie",deconnexion); g("bOrg2",choisirOrg);
   document.querySelectorAll(".item[data-id]").forEach(function(e){e.onclick=function(){ouvrir(e.dataset.id)}});
   document.querySelectorAll(".go").forEach(function(e){e.onkeydown=function(k){if(k.key==="Enter"||k.key===" "){k.preventDefault();e.click()}}});
   if(view==="reglages") NC.lierReglages();
 }
-function confirmer(){var b=$("bVider");if(b.dataset.c)return false;b.dataset.c=1;b.textContent="Toucher encore pour tout effacer";return true}
+function confirmer(){var b=$("bVider");if(b.dataset.c)return false;b.dataset.c=1;b.textContent=SRV?"Toucher encore pour archiver":"Toucher encore pour tout effacer";return true}
 var EX=[{f:"PETRO-CANADA",a:["Essence ordinaire","41,2 L x 1,478"],st:"60.88",tps:"3.04",tvq:"6.07",pb:"",t:"69.99",d:"2026-11-10",n:"483920"},
  {f:"RONA Saint-Hubert",a:["Vis a bois 2 1/2 po","Contreplaque 3/4","Ruban a mesurer"],st:"285.19",tps:"14.26",tvq:"28.44",pb:"",t:"327.89",d:"2026-11-08",n:"R-77120"},
  {f:"Bistro Le Rouge-Gorge",a:["Table 12 - 2 couverts"],st:"118.00",tps:"5.90",tvq:"11.77",pb:"11.45",t:"147.12",d:"2026-11-06",n:"T12-0447"}];
@@ -360,10 +467,74 @@ function demanderCode(){
   $("fc").addEventListener("focus",function(){setTimeout(function(){$("bc").scrollIntoView({block:"nearest"})},300)});
 }
 
+/* ---- connexion NEKHEVI et entreprise active ---- */
+var J=function(r){return r.json().catch(function(){return{}})};
+function api(url,opt){opt=opt||{};opt.headers=H();opt.credentials="same-origin";return fetch(url,opt)}
+function porte(html){porteOuverte=true;document.body.classList.add("sans-nav");document.body.classList.remove("avec-org");$("org").hidden=true;fermer();
+  $("view").innerHTML='<div class="porte"><img src="/brand/ncapture-icone.svg" alt="">'+html+'</div>'}
+function ecranConnexion(msg){
+  var lien=(CFG.app||"https://app.nekhevi.com")+"/ncapture";
+  porte('<p class="eyebrow" style="margin-top:14px">NEKHEVI</p><h1>Connexion</h1><p class="sub">'+(msg||"NCapture s’ouvre avec votre compte NEKHEVI. Vos factures restent dans l’espace de votre entreprise.")+'</p>'+
+    '<a class="btn gold full" id="bConn" href="'+esc(lien)+'">Se connecter avec NEKHEVI</a>'+
+    '<p class="note" style="margin-top:14px">Vous passez par app.nekhevi.com, puis vous revenez ici automatiquement.</p>'+
+    (CFG.code?'<button class="btn ghost full" id="bRepli" style="margin-top:10px">Utiliser un code d’accès (dépannage)</button>':''));
+  var b=$("bRepli"); if(b) b.onclick=function(){SRV=false;ORG=null;porteOuverte=false;document.body.classList.remove("sans-nav");items=load();render();if(!code())demanderCode()};
+}
+function ecranMfa(){
+  porte('<p class="eyebrow" style="margin-top:14px">Double authentification</p><h1>Code de vérification</h1><p class="sub">Entrez le code à 6 chiffres de votre application d’authentification.</p>'+
+    '<form id="fMfa"><label for="fCode" class="sr">Code</label><input id="fCode" class="code6" inputmode="numeric" autocomplete="one-time-code" maxlength="7" pattern="[0-9 ]*" enterkeyhint="go">'+
+    '<button class="btn gold full" type="submit">Continuer</button></form>');
+  $("fCode").focus();
+  $("fMfa").onsubmit=function(e){e.preventDefault();var v=$("fCode").value.replace(/\s/g,"");if(!/^\d{6}$/.test(v))return toast("6 chiffres");
+    api("/api/session",{method:"POST",body:JSON.stringify({code:v})}).then(function(r){if(!r.ok){toast("Code refusé, réessayez");$("fCode").value="";return}demarrerSession()})};
+}
+function sessionPerdue(){if(!SRV)return;items=[];synchro={};ecranConnexion("Votre session a pris fin. Reconnectez-vous pour continuer.")}
+function deconnexion(){api("/api/session",{method:"DELETE"}).then(function(){try{localStorage.removeItem(ORGKEY)}catch(e){}items=[];synchro={};ORG=null;ecranConnexion("Vous êtes déconnecté.")})}
+var ICO_BAS='<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M6 9l6 6 6-6"/></svg>';
+var COULEUR=/^#[0-9A-Fa-f]{6}$/;
+function majOrgChip(){var c=$("org");document.body.classList.toggle("avec-org",!!ORG);if(!ORG){c.hidden=true;return}
+  c.hidden=false;c.style.setProperty("--org",COULEUR.test(ORG.couleur||"")?ORG.couleur:"var(--nk-accent)");
+  c.innerHTML='<i></i><span>'+esc(ORG.nom)+'</span>'+(SEL?ICO_BAS:"");c.dataset.sel=SEL?"1":"0";
+  c.setAttribute("aria-label","Entreprise active : "+ORG.nom+(SEL?". Toucher pour changer.":""));c.onclick=SEL?choisirOrg:null}
+function choisirOrg(){if(!SEL)return;
+  $("sheetIn").innerHTML='<div class="grab"></div><div class="form" style="grid-column:1/-1"><p class="eyebrow">Bêta</p><h1>Choisir l’entreprise</h1>'+
+    '<p class="sub">Les factures de chaque entreprise restent séparées.</p><div class="orglist">'+
+    ORGS.map(function(o){var col=COULEUR.test(o.couleur||"")?o.couleur:"var(--nk-accent)";return '<button type="button" data-org="'+esc(o.id)+'" style="--org:'+col+'" aria-current="'+(ORG&&ORG.id===o.id)+'"><i></i><span>'+esc(o.nom)+'<small>'+esc({owner:"Propriétaire",admin:"Administrateur",member:"Membre",viewer:"Lecteur"}[o.role]||o.role)+'</small></span></button>'}).join("")+
+    '</div></div><div class="acts"><button class="btn" id="bOrgX">Fermer</button></div>';
+  $("sheet").classList.add("on");$("bOrgX").onclick=fermer;
+  $("sheetIn").querySelectorAll("[data-org]").forEach(function(b){b.onclick=function(){var o=ORGS.find(function(x){return x.id===b.dataset.org});fermer();if(o&&(!ORG||o.id!==ORG.id))activerOrg(o)}});
+}
+function activerOrg(o,silence){ORG=o;try{localStorage.setItem(ORGKEY,o.id)}catch(e){}items=[];synchro={};REG={destination:"nbooks",envoi_direct:false,modifiable:false};majOrgChip();render();chargerReglages();chargerDocs();if(!silence)toast("Entreprise : "+o.nom)}
+function chargerDocs(){var org=ORG&&ORG.id;
+  return api("/api/documents").then(function(r){if(r.status===401){sessionPerdue();throw 0}if(!r.ok)throw 0;return r.json()}).then(function(j){
+    if(!ORG||ORG.id!==org)return;
+    var locaux=items.filter(function(i){return !i.srv});
+    items=locaux.concat((j.documents||[]).map(function(d){d.srv=true;synchro[d.id]=snap(d);return d}));render();
+  }).catch(function(){if(SRV&&!porteOuverte)toast("Factures non chargées : vérifiez la connexion")});
+}
+function demarrerSession(){
+  var h=location.hash.slice(1), q=new URLSearchParams(h), th=q.get("nc_th"), orgVoulue=q.get("org");
+  if(h) history.replaceState(null,"",location.pathname+location.search);
+  var etape=th?api("/api/session",{method:"POST",body:JSON.stringify({token_hash:th})}).then(function(r){if(!r.ok)toast("Lien de connexion expiré : reconnectez-vous")}):Promise.resolve();
+  return etape.then(function(){return api("/api/session")}).then(J).then(function(s){
+    if(!s.connecte) return ecranConnexion();
+    if(s.mfa) return ecranMfa();
+    return api("/api/moi").then(function(r){if(!r.ok)throw 0;return r.json()}).then(function(m){
+      MOI=m;ORGS=m.orgs||[];SEL=!!m.selecteur;
+      if(!ORGS.length) return porte('<h1 style="margin-top:14px">Aucune entreprise</h1><p class="sub">Votre compte NEKHEVI n’est relié à aucune entreprise. Demandez une invitation au propriétaire.</p><button class="btn full" id="bSortie2">Se déconnecter</button>'),$("bSortie2").onclick=deconnexion;
+      var mem=null;try{mem=localStorage.getItem(ORGKEY)}catch(e){}
+      var o=ORGS.find(function(x){return x.id===orgVoulue})||ORGS.find(function(x){return x.id===mem})||ORGS[0];
+      SRV=true;porteOuverte=false;document.body.classList.remove("sans-nav");activerOrg(o,true);
+    });
+  }).catch(function(){ecranConnexion("Connexion impossible pour l’instant. Réessayez dans un moment.")});
+}
+
 items.forEach(function(i){if(i.etat==="lecture")i.etat="erreur"});
 fetch("/categories.json").then(function(r){return r.json()}).then(function(c){CATS=c}).catch(function(){});
 fetch("/api/config").then(function(r){return r.json()}).then(function(c){CFG=c}).catch(function(){}).then(function(){
   var p=$("mode");p.textContent=CFG.mode==="ia"?"Lecture IA":"Démo";p.className="tag "+(CFG.mode==="ia"?"vert":"draft");
+  if(CFG.auth==="nekhevi"){items=[];return demarrerSession()}
+  items=load(); items.forEach(function(i){if(i.etat==="lecture")i.etat="erreur"});
   if(CFG.code&&!code())demanderCode(); render();
 });
 if("serviceWorker" in navigator){navigator.serviceWorker.register("/sw.js").catch(function(){})}

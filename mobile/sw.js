@@ -1,7 +1,7 @@
 // NCapture : cache minimal pour l'installation sur l'écran d'accueil. Les appels /api ne sont jamais mis en cache.
 // Réseau d'abord (toujours la dernière version), cache seulement hors ligne.
-const C = 'ncapture-v1';
-const COQUE = ['/capture', '/ncapture.css', '/ncapture-ui.js', '/categories.json', '/icon-192.png', '/favicon.svg',
+const C = 'ncapture-v3';
+const COQUE = ['/capture', '/ncapture.css', '/ncapture-ui.js', '/ncapture-regles.js', '/categories.json', '/icon-192.png', '/favicon.svg',
   '/brand/ncapture-marque-fond-sombre.svg', '/brand/ncapture-marque-fond-clair.svg'];
 self.addEventListener('install', (e) => { e.waitUntil(caches.open(C).then((c) => c.addAll(COQUE))); self.skipWaiting(); });
 self.addEventListener('activate', (e) => {
