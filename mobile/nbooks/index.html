@@ -261,8 +261,7 @@ $("veil").onclick=fermer;document.addEventListener("keydown",function(e){if(e.ke
 
 /* ---- synchro avec la capture ---- */
 function charger(){
-  var h={},c=null;try{c=localStorage.getItem(CODEKEY)}catch(e){}if(c)h["x-capture-code"]=c;
-  return fetch("/api/factures",{cache:"no-store",headers:h}).then(function(r){if(r.status===401){demanderCode();throw 0}if(!r.ok)throw 0;return r.json()}).then(function(j){
+  return fetch("/api/factures",{cache:"no-store",headers:entetes(),credentials:"same-origin"}).then(function(r){if(r.status===401||r.status===400||r.status===404){demanderCode();throw 0}if(!r.ok)throw 0;return r.json()}).then(function(j){
     enLigne=true;$("live").className="live";var l=(j.factures||[]).map(function(f){f.pourboire=f.pourboire||0;return f}), arr=[];
     l.forEach(function(f){if(!vus[f.id]){vus[f.id]=1;if(!premier){nouveaux[f.id]=1;arr.push(f)}}});
     var change=l.length!==CAP.length||arr.length; CAP=l; window.__stk=j.stockage;
@@ -273,11 +272,16 @@ function charger(){
   }).catch(function(){enLigne=false;$("live").className="live off"});
 }
 
-var demande=0;function demanderCode(){if(demande)return;demande=1;var v=prompt("Code d'accès NCapture");if(v){try{localStorage.setItem(CODEKEY,v.trim())}catch(e){}}setTimeout(function(){demande=0},v?0:60000)}
+/* Accès : même session NEKHEVI que NCapture (témoins du domaine) et même entreprise active. */
+function entetes(){var h={"x-ncapture":"1"},o=null,c=null;try{o=localStorage.getItem("ncapture-org");c=localStorage.getItem(CODEKEY)}catch(e){}if(o)h["x-ncapture-org"]=o;if(c)h["x-capture-code"]=c;return h}
+var demande=0, REPLI=null;fetch("/api/config").then(function(r){return r.json()}).then(function(c){REPLI=!!c.code}).catch(function(){REPLI=false});
+function demanderCode(){if(demande)return;demande=1;
+  if(REPLI){var v=prompt("Code d'accès NCapture");if(v){try{localStorage.setItem(CODEKEY,v.trim())}catch(e){}}setTimeout(function(){demande=0},v?0:60000);return}
+  toast('<b>Connexion requise</b><br>Ouvrez <a href="/capture" target="capture" style="color:inherit;text-decoration:underline">NCapture</a> avec votre compte NEKHEVI, puis revenez ici.');setTimeout(function(){demande=0},15000)}
 var tT;function toast(h){var t=$("toast");t.innerHTML=h;t.classList.add("on");clearTimeout(tT);tT=setTimeout(function(){t.classList.remove("on")},5000)}
 $("page").addEventListener("click",function(e){var x=e.target.closest("[data-f]");if(x)return ouvrir(x.getAttribute("data-f"));
-  if(e.target.id==="bReset"){if(!confirmer())return;var h={},c=localStorage.getItem(CODEKEY);if(c)h["x-capture-code"]=c;
-    fetch("/api/factures",{method:"DELETE",headers:h}).then(function(r){if(r.status===401){var v=prompt("Code d'accès de la démo");if(v){localStorage.setItem(CODEKEY,v)}throw 0}if(!r.ok)throw 0;CAP=[];vus={};nouveaux={};render();toast("Démo remise à zéro")}).catch(function(){toast("Remise à zéro non faite")})}});
+  if(e.target.id==="bReset"){if(!confirmer())return;
+    fetch("/api/factures",{method:"DELETE",headers:entetes(),credentials:"same-origin"}).then(function(r){if(r.status===401){demanderCode();throw 0}if(r.status===403){toast("Réservé au propriétaire ou à un administrateur");throw 1}if(!r.ok)throw 0;CAP=[];vus={};nouveaux={};render();toast("Démo remise à zéro")}).catch(function(){toast("Remise à zéro non faite")})}});
 var arm=0;function confirmer(){if(Date.now()-arm<4000)return true;arm=Date.now();toast("Cliquez encore une fois pour confirmer la remise à zéro");return false}
 window.addEventListener("hashchange",function(){view=(location.hash||"#accueil").slice(1);fermer();render();window.scrollTo(0,0)});
 
