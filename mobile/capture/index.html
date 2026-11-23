@@ -22,6 +22,7 @@
 <style>
 /* Entreprise active (multi-clients) */
 .orgchip{display:inline-flex;align-items:center;gap:8px;max-width:46vw;height:34px;padding:0 12px;border-radius:999px;border:1px solid var(--org,var(--nk-accent));background:color-mix(in oklab,var(--org,var(--nk-accent)) 12%,transparent);color:var(--nk-fg);font:600 13px/1 var(--nk-font-sans,system-ui);cursor:default;white-space:nowrap}
+.orgchip[hidden]{display:none}
 .orgchip[data-sel="1"]{cursor:pointer}
 .orgchip i{width:10px;height:10px;border-radius:50%;background:var(--org,var(--nk-accent));flex:none}
 .orgchip span{overflow:hidden;text-overflow:ellipsis}
@@ -36,7 +37,7 @@
 .porte .btn{margin-top:18px}
 .porte .code6{font:500 28px/1 var(--nk-font-mono,monospace);letter-spacing:.3em;text-align:center}
 body.sans-nav nav#nav{display:none}
-@media (max-width:520px){.top .mod{display:none}.orgchip{max-width:52vw}}
+@media (max-width:520px){.top .mod,.top .sep{display:none}.orgchip{max-width:52vw}body.avec-org .top .logo b,body.avec-org .top #mode{display:none}}
 </style>
 </head>
 <body>
@@ -424,7 +425,7 @@ function demanderCode(){
 /* ---- connexion NEKHEVI et entreprise active ---- */
 var J=function(r){return r.json().catch(function(){return{}})};
 function api(url,opt){opt=opt||{};opt.headers=H();opt.credentials="same-origin";return fetch(url,opt)}
-function porte(html){porteOuverte=true;document.body.classList.add("sans-nav");$("org").hidden=true;fermer();
+function porte(html){porteOuverte=true;document.body.classList.add("sans-nav");document.body.classList.remove("avec-org");$("org").hidden=true;fermer();
   $("view").innerHTML='<div class="porte"><img src="/brand/ncapture-icone.svg" alt="">'+html+'</div>'}
 function ecranConnexion(msg){
   var lien=(CFG.app||"https://app.nekhevi.com")+"/ncapture";
@@ -446,7 +447,7 @@ function sessionPerdue(){if(!SRV)return;items=[];synchro={};ecranConnexion("Votr
 function deconnexion(){api("/api/session",{method:"DELETE"}).then(function(){try{localStorage.removeItem(ORGKEY)}catch(e){}items=[];synchro={};ORG=null;ecranConnexion("Vous êtes déconnecté.")})}
 var ICO_BAS='<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M6 9l6 6 6-6"/></svg>';
 var COULEUR=/^#[0-9A-Fa-f]{6}$/;
-function majOrgChip(){var c=$("org");if(!ORG){c.hidden=true;return}
+function majOrgChip(){var c=$("org");document.body.classList.toggle("avec-org",!!ORG);if(!ORG){c.hidden=true;return}
   c.hidden=false;c.style.setProperty("--org",COULEUR.test(ORG.couleur||"")?ORG.couleur:"var(--nk-accent)");
   c.innerHTML='<i></i><span>'+esc(ORG.nom)+'</span>'+(SEL?ICO_BAS:"");c.dataset.sel=SEL?"1":"0";
   c.setAttribute("aria-label","Entreprise active : "+ORG.nom+(SEL?". Toucher pour changer.":""));c.onclick=SEL?choisirOrg:null}
@@ -458,7 +459,7 @@ function choisirOrg(){if(!SEL)return;
   $("sheet").classList.add("on");$("bOrgX").onclick=fermer;
   $("sheetIn").querySelectorAll("[data-org]").forEach(function(b){b.onclick=function(){var o=ORGS.find(function(x){return x.id===b.dataset.org});fermer();if(o&&(!ORG||o.id!==ORG.id))activerOrg(o)}});
 }
-function activerOrg(o){ORG=o;try{localStorage.setItem(ORGKEY,o.id)}catch(e){}items=[];synchro={};majOrgChip();render();chargerDocs();toast("Entreprise : "+o.nom)}
+function activerOrg(o,silence){ORG=o;try{localStorage.setItem(ORGKEY,o.id)}catch(e){}items=[];synchro={};majOrgChip();render();chargerDocs();if(!silence)toast("Entreprise : "+o.nom)}
 function chargerDocs(){var org=ORG&&ORG.id;
   return api("/api/documents").then(function(r){if(r.status===401){sessionPerdue();throw 0}if(!r.ok)throw 0;return r.json()}).then(function(j){
     if(!ORG||ORG.id!==org)return;
@@ -478,7 +479,7 @@ function demarrerSession(){
       if(!ORGS.length) return porte('<h1 style="margin-top:14px">Aucune entreprise</h1><p class="sub">Votre compte NEKHEVI n’est relié à aucune entreprise. Demandez une invitation au propriétaire.</p><button class="btn full" id="bSortie2">Se déconnecter</button>'),$("bSortie2").onclick=deconnexion;
       var mem=null;try{mem=localStorage.getItem(ORGKEY)}catch(e){}
       var o=ORGS.find(function(x){return x.id===orgVoulue})||ORGS.find(function(x){return x.id===mem})||ORGS[0];
-      SRV=true;porteOuverte=false;document.body.classList.remove("sans-nav");activerOrg(o);
+      SRV=true;porteOuverte=false;document.body.classList.remove("sans-nav");activerOrg(o,true);
     });
   }).catch(function(){ecranConnexion("Connexion impossible pour l’instant. Réessayez dans un moment.")});
 }
