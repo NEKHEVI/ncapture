@@ -1,17 +1,26 @@
 // /api/factures — factures fournisseurs envoyées par la capture, lues par la page NBooks.
-// GET : liste ; POST : ajoute ; DELETE : remet la démo à zéro. Code d'accès CAPTURE_CODE si défini (POST/DELETE).
+// GET : liste ; POST : ajoute ; DELETE : remet la démo à zéro.
+// SÉCURITÉ : toutes les méthodes exigent le code d'accès CAPTURE_CODE (en-tête x-capture-code).
+// Sans CAPTURE_CODE défini, la route refuse tout (fermée par défaut) : aucune facture sans authentification.
 // NCapture (NEKHEVI), démo NBooks, AGPL-3.0.
+import { timingSafeEqual } from 'node:crypto';
 import { lister, ajouter, vider, mode } from './_store.js';
 
 const n = (x) => Math.round((Number(x) || 0) * 100) / 100;
 const t = (x, max = 120) => String(x ?? '').slice(0, max);
 
+/** Compare le code reçu au code attendu sans fuite de temps. Faux si l'un des deux manque. */
+export function codeValide(recu, attendu) {
+  if (!attendu || typeof recu !== 'string' || !recu) return false;
+  const a = Buffer.from(recu), b = Buffer.from(attendu);
+  return a.length === b.length && timingSafeEqual(a, b);
+}
+
 export default async function handler(req, res) {
   res.setHeader('Cache-Control', 'no-store');
+  if (!codeValide(req.headers['x-capture-code'], process.env.CAPTURE_CODE)) return res.status(401).json({ error: 'code' });
   try {
     if (req.method === 'GET') return res.status(200).json({ stockage: mode(), factures: await lister() });
-    const code = process.env.CAPTURE_CODE;
-    if (code && req.headers['x-capture-code'] !== code) return res.status(401).json({ error: 'code' });
     if (req.method === 'DELETE') { await vider(); return res.status(200).json({ ok: true }); }
     if (req.method !== 'POST') { res.setHeader('Allow', 'GET, POST, DELETE'); return res.status(405).json({ error: 'method' }); }
 
