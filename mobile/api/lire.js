@@ -5,6 +5,7 @@
 // Chaque appel IA est noté dans ai_usage de l'org (fonction ncapture_log_ai_usage) ; le budget IA de l'org est respecté.
 // NCapture (NEKHEVI), AGPL-3.0.
 import { exigerOrg, codeRepliValide } from './_nekhevi.js';
+import { CONSIGNE, normaliser, relire, fusionner } from './_lecture.js';
 
 // La clé est nettoyée (espaces, retours de ligne, guillemets collés par erreur dans Vercel).
 const CLE = () => String(process.env.ANTHROPIC_API_KEY || '').trim().replace(/^["']+|["']+$/g, '');
@@ -17,23 +18,8 @@ const EXEMPLES = [
   { fournisseur: 'RONA Saint-Hubert', date: '2026-11-08', numero: 'R-77120', no_tps: '897654321RT0001', no_tvq: '1098765432TQ0001',
     sous_total: 285.19, tps: 14.26, tvq: 28.44, pourboire: 0, total: 327.89, articles: ['Vis à bois 2 1/2 po', 'Contreplaqué 3/4', 'Ruban à mesurer'], confiance: 0.93 },
   { fournisseur: 'Bistro Le Rouge-Gorge', date: '2026-11-06', numero: 'T12-0447', no_tps: '', no_tvq: '',
-    sous_total: 118.00, tps: 5.90, tvq: 11.77, pourboire: 11.45, total: 147.12, articles: ['Table 12 — 2 couverts', 'Pourboire'], confiance: 0.88 },
+    sous_total: 118.00, tps: 5.90, tvq: 11.77, pourboire: 11.45, total: 147.12, articles: ['Table 12 — 2 couverts', 'Pourboire'], champs_incertains: ['pourboire'], confiance: 0.88 },
 ];
-
-const CONSIGNE = `Tu lis une photo de facture ou de reçu québécois. Réponds UNIQUEMENT par un objet JSON, sans texte autour :
-{"fournisseur": string, "date": "AAAA-MM-JJ" ou "", "numero": string, "no_tps": string, "no_tvq": string,
- "sous_total": number, "tps": number, "tvq": number, "pourboire": number, "total": number,
- "articles": [string], "confiance": number entre 0 et 1}
-Règles de lecture (c'est de la comptabilité : exactitude avant tout) :
-- Le fournisseur est le nom du commerce IMPRIMÉ sur la facture (en-tête, logo, bas de facture). Recopie-le tel quel. Ne le déduis jamais des montants, du type d'achat ou d'une facture « typique ». S'il est illisible, mets "" et une confiance ≤ 0.5.
-- Lis chaque montant sur la photo ; n'en calcule aucun. Les articles sont recopiés tels qu'imprimés.
-Règles : montants en dollars avec 2 décimales (point décimal) ; 0 si absent ; no_tps = numéro TPS/TVH (finit par RT0001) ; no_tvq = numéro TVQ (finit par TQ0001) ; "" si absent. Ne devine pas : baisse la confiance si un montant est illisible.`;
-
-const c = (x) => Math.round((Number(x) || 0) * 100);
-
-function balance(r) {
-  return Math.abs(c(r.sous_total) + c(r.tps) + c(r.tvq) + c(r.pourboire) - c(r.total)) <= 3;
-}
 
 async function lire(model, mediaType, data) {
   const r = await fetch('https://api.anthropic.com/v1/messages', {
@@ -52,7 +38,7 @@ async function lire(model, mediaType, data) {
   const txt = (j.content || []).map((b) => b.text || '').join('');
   const m = txt.match(/\{[\s\S]*\}/);
   if (!m) throw Object.assign(new Error('reponse illisible'), { usage: j.usage });
-  return { resultat: JSON.parse(m[0]), usage: j.usage || {} };
+  return { resultat: normaliser(JSON.parse(m[0])), usage: j.usage || {} };
 }
 
 // Note l'appel dans ai_usage de l'org (jamais bloquant : une erreur de journal ne casse pas la lecture).
@@ -101,7 +87,7 @@ export default async function handler(req, res) {
   // Sans IA, une vraie photo n'est PAS lue : on ne renvoie jamais un faux fournisseur.
   if (!process.env.ANTHROPIC_API_KEY || process.env.CAPTURE_DEMO === '1') {
     return res.status(200).json({ mode: 'non-lu', modele: 'aucun', resultat: {
-      fournisseur: '', date: '', numero: '', no_tps: '', no_tvq: '', sous_total: 0, tps: 0, tvq: 0, pourboire: 0, total: 0, articles: [], confiance: 0 } });
+      fournisseur: '', date: '', numero: '', no_tps: '', no_tvq: '', sous_total: 0, tps: 0, tvq: 0, pourboire: 0, total: 0, articles: [], champs_incertains: [], confiance: 0 } });
   }
 
   if (!(await budgetOk(ctx))) return res.status(402).json({ error: 'budget' });
@@ -112,10 +98,10 @@ export default async function handler(req, res) {
       const l1 = await lire(MODEL_RAPIDE, m[1], m[2]);
       r = l1.resultat; await noter(ctx, MODEL_RAPIDE, l1.usage, 'ok', debut, false);
     } catch (e) { await noter(ctx, MODEL_RAPIDE, e.usage, 'error', debut, false); throw e; }
-    if ((Number(r.confiance) || 0) < 0.8 || !balance(r)) {
+    if (relire(r)) {
       debut = Date.now();
       try {
-        const l2 = await lire(MODEL_PRECIS, m[1], m[2]); r = l2.resultat; modele = MODEL_PRECIS;
+        const l2 = await lire(MODEL_PRECIS, m[1], m[2]); r = fusionner(r, l2.resultat); modele = MODEL_PRECIS;
         await noter(ctx, MODEL_PRECIS, l2.usage, 'ok', debut, true);
       } catch (e) { await noter(ctx, MODEL_PRECIS, e.usage, 'error', debut, true); /* on garde la 1re lecture */ }
     }

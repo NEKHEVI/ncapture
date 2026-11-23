@@ -11,6 +11,8 @@ import documents from '../api/documents.js';
 import lire from '../api/lire.js';
 import moi from '../api/moi.js';
 import sessionApi from '../api/session.js';
+import reglages from '../api/reglages.js';
+import quickbooks from '../api/quickbooks.js';
 
 const URL_SB = process.env.NEKHEVI_SUPABASE_URL;
 const ANON = process.env.NEKHEVI_SUPABASE_ANON_KEY;
@@ -249,4 +251,40 @@ test('connexion par jeton à usage unique (bouton « Ouvrir NCapture ») : une s
   const cookie = r1.cookies.map((c) => c.split(';')[0]).join('; ');
   const m = await appel(moi, { headers: { cookie } });
   assert.equal(m.status, 200); assert.equal(m.body.courriel, memberA.email);
+});
+
+test('destination par org : NBooks par défaut ; owner/admin changent ; membre non ; B ne voit pas A', async () => {
+  delete process.env.NCAPTURE_QBO_ENVOI;
+  let r = await appel(reglages, { headers: H(memberA, A) });
+  assert.equal(r.status, 200); assert.equal(r.body.destination, 'nbooks'); assert.equal(r.body.modifiable, false);
+  assert.equal((await appel(reglages, { method: 'PATCH', headers: H(memberA, A), body: { destination: 'quickbooks' } })).status, 403);
+  assert.equal((await appel(reglages, { method: 'PATCH', headers: H(ownerA, A), body: { destination: 'ailleurs' } })).status, 400);
+  r = await appel(reglages, { method: 'PATCH', headers: H(ownerA, A), body: { destination: 'quickbooks' } });
+  assert.equal(r.status, 200); assert.equal(r.body.destination, 'quickbooks'); assert.equal(r.body.envoi_direct, false);
+  assert.equal((await appel(reglages, { headers: H(memberA, A) })).body.destination, 'quickbooks');
+  assert.equal((await appel(reglages, { headers: H(ownerB, B) })).body.destination, 'nbooks');
+  assert.equal((await appel(reglages, { method: 'PATCH', headers: H(ownerA, B), body: { destination: 'quickbooks' } })).status, 404);
+  const direct = await memberA.db.from('ncapture_org_settings').update({ destination: 'nbooks' }).eq('org_id', A).select('org_id');
+  assert.equal(direct.data?.length ?? 0, 0, 'un membre ne change pas le réglage en base');
+  assert.equal((await appel(reglages, { headers: { 'x-ncapture': '1', 'x-ncapture-org': A } })).status, 401);
+});
+
+test('export QuickBooks : horodaté seulement sur une facture approuvée de son org ; champs incertains gardés', async () => {
+  const n = await appel(documents, { method: 'POST', headers: H(memberA, A), body: { cle: 'qbo1',
+    r: { fournisseur: 'Resto Fict…', sous_total: 40, tps: 2, tvq: 3.99, pourboire: 7, total: 52.99, champs_incertains: ['fournisseur', 'pourboire', 'inconnu'] }, thumb: IMG } });
+  assert.equal(n.status, 201);
+  const id = n.body.document.id;
+  assert.deepEqual(n.body.document.r.champs_incertains, ['fournisseur', 'pourboire']);
+  assert.equal((await appel(documents, { method: 'PATCH', url: `/api/documents?id=${id}`, headers: H(memberA, A), body: { exporte: true } })).status, 409);
+  assert.equal((await appel(documents, { method: 'PATCH', url: `/api/documents?id=${id}`, headers: H(memberA, A), body: { etat: 'approuvee' } })).status, 200);
+  const x = await appel(documents, { method: 'PATCH', url: `/api/documents?id=${id}`, headers: H(memberA, A), body: { exporte: true } });
+  assert.equal(x.status, 200); assert.ok(x.body.document.exporte);
+  assert.equal((await appel(documents, { method: 'PATCH', url: `/api/documents?id=${id}`, headers: H(ownerB, B), body: { exporte: true } })).status, 404);
+});
+
+test('envoi direct QuickBooks : désactivé par défaut (503), jamais sans session', async () => {
+  delete process.env.NCAPTURE_QBO_ENVOI;
+  assert.equal((await appel(quickbooks, { method: 'POST', headers: H(memberA, A), body: { id: docA } })).status, 503);
+  assert.equal((await appel(quickbooks, { method: 'POST', headers: { 'x-ncapture': '1', 'x-ncapture-org': A }, body: { id: docA } })).status, 401);
+  assert.equal((await appel(quickbooks, { method: 'POST', headers: H(viewerA, A), body: { id: docA } })).status, 403);
 });
