@@ -26,7 +26,7 @@ async function lire(model, mediaType, data) {
     method: 'POST',
     headers: { 'x-api-key': CLE(), 'anthropic-version': '2023-06-01', 'content-type': 'application/json' },
     body: JSON.stringify({
-      model, max_tokens: 1024,
+      model, max_tokens: 4096,
       messages: [{ role: 'user', content: [
         { type: 'image', source: { type: 'base64', media_type: mediaType, data } },
         { type: 'text', text: CONSIGNE },
@@ -37,7 +37,11 @@ async function lire(model, mediaType, data) {
   if (!r.ok) throw Object.assign(new Error(`ia ${r.status} ${j?.error?.message || ''}`), { usage: j.usage });
   const txt = (j.content || []).map((b) => b.text || '').join('');
   const m = txt.match(/\{[\s\S]*\}/);
-  if (!m) throw Object.assign(new Error('reponse illisible'), { usage: j.usage });
+  if (!m) {
+    // Diagnostic sans contenu de la facture : raison d'arrêt, types de blocs, longueur du texte.
+    const types = (j.content || []).map((b) => b.type).join(',');
+    throw Object.assign(new Error(`reponse illisible model=${model} stop=${j.stop_reason} blocs=${types} texte=${txt.length} out=${j.usage?.output_tokens}`), { usage: j.usage });
+  }
   return { resultat: normaliser(JSON.parse(m[0])), usage: j.usage || {} };
 }
 
@@ -94,11 +98,21 @@ export default async function handler(req, res) {
 
   try {
     let debut = Date.now(), r, modele = MODEL_RAPIDE;
+    let secoursFait = false;
     try {
       const l1 = await lire(MODEL_RAPIDE, m[1], m[2]);
       r = l1.resultat; await noter(ctx, MODEL_RAPIDE, l1.usage, 'ok', debut, false);
-    } catch (e) { await noter(ctx, MODEL_RAPIDE, e.usage, 'error', debut, false); throw e; }
-    if (relire(r)) {
+    } catch (e) {
+      await noter(ctx, MODEL_RAPIDE, e.usage, 'error', debut, false);
+      console.error('lecture rapide echouee', e.message);
+      // Secours : on relit avec le modèle précis avant d'abandonner.
+      debut = Date.now(); secoursFait = true;
+      try {
+        const l2 = await lire(MODEL_PRECIS, m[1], m[2]); r = l2.resultat; modele = MODEL_PRECIS;
+        await noter(ctx, MODEL_PRECIS, l2.usage, 'ok', debut, true);
+      } catch (e2) { await noter(ctx, MODEL_PRECIS, e2.usage, 'error', debut, true); throw e2; }
+    }
+    if (!secoursFait && relire(r)) {
       debut = Date.now();
       try {
         const l2 = await lire(MODEL_PRECIS, m[1], m[2]); r = fusionner(r, l2.resultat); modele = MODEL_PRECIS;
